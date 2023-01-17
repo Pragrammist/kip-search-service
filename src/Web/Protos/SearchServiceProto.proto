@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+option csharp_namespace = "GrpcSearchServiceNamespace";
+
+service SearchServiceProto
+{
+    rpc AddFilmSelection (AddFilmSelectionRequest) returns (AddFilmSelectionResponse);
+
+    rpc DeleteFilmSelection (DeleteFilmSelectionRequest) returns (IsSuccessResponse);
+
+    rpc UpdateSelectionFilmsCollection (UpdateSelectionFilmsCollectionRequest) returns (IsSuccessResponse);
+
+    rpc UpdateSelectionName (UpdateSelectionNameRequest) returns (IsSuccessResponse);
+}
+
+message AddFilmSelectionRequest
+{
+    string name = 1;
+    repeated string films = 2;
+}
+
+message AddFilmSelectionResponse
+{
+    string id = 1;
+    string name = 2;
+    repeated string films = 3;
+}
+
+message DeleteFilmSelectionRequest
+{
+    string id = 1;
+}
+
+message UpdateSelectionNameRequest
+{
+    string id = 1;
+    string name = 2;
+}
+message UpdateSelectionFilmsCollectionRequest
+{
+    string id = 1;
+    repeated string films  = 2;
+}
+
+
+message IsSuccessResponse
+{
+    bool success = 1;
+}
