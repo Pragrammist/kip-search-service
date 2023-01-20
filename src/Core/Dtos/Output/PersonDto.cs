@@ -4,7 +4,7 @@ public class PersonDto
 {
     public string Id { get; set; }  = null!;
 
-    public string KindOfPerson { get; set; } = null!;
+    public PersonType KindOfPerson { get; set; } 
 
     public DateTime Birthday { get; set; }
 

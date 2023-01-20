@@ -2,17 +2,6 @@ namespace Core.Dtos;
 
 public class FilmDto
 {
-    public bool IsSerial { get; set; }
-
-    public bool IsFilm { get; set; }
-
-    public bool IsReleas { get; set; }
-
-    public bool IsPremiera { get; set; }
-
-    public bool IsSreening { get; set; }
-
-
     public uint AgeLimit { get; set; }
 
 
@@ -28,9 +17,10 @@ public class FilmDto
 
     
 
-    public string KindOfFilm { get; set; } = null!;
+    public FilmType KindOfFilm { get; set; } 
+    
 
-    public string ReleaseType { get; set; } = null!;
+    public FilmReleaseType ReleaseType { get; set; } 
 
 
     public TimeSpan? Duration { get; set; } 
