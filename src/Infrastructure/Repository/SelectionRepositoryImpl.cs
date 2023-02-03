@@ -1,13 +1,27 @@
-
+using Nest;
 using Core;
 using Core.Repositories;
+using Core.Dtos;
+using Core.Dtos.Search;
+using Mapster;
+using Elasticsearch;
 
 namespace Infrastructure.Repositories;
 public class SelectionRepositoryImpl : SelectionRepository
 {
-    public Task<FilmSelection> CreateSelection(List<string> films, string name)
+    readonly IElasticClient _elasticClient;
+    public SelectionRepositoryImpl(IElasticClient elasticClient)
     {
-        throw new NotImplementedException();
+        _elasticClient = elasticClient;
+    }
+    public async Task<FilmSelectionDto> CreateSelection(string[] films, string name)
+    {
+        FilmSelection _doc = new FilmSelection(films, name);
+
+        var res = await _elasticClient.IndexAsync(_doc, d => d.Index("selections"));
+        _doc.Id = res.Id;
+
+        return _doc.Adapt<FilmSelectionDto>();
     }
 
     public Task<bool> Delete(string id)
@@ -15,12 +29,22 @@ public class SelectionRepositoryImpl : SelectionRepository
         throw new NotImplementedException();
     }
 
-    public Task<FilmSelection> Get(string id)
+    public Task<FilmSelectionDto> Get(string id)
     {
         throw new NotImplementedException();
     }
 
-    public Task<FilmSelection> Get(uint page = 1, uint limit = 20)
+    public Task<FilmSelectionDto> Get(uint page = 1, uint limit = 20)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IEnumerable<FilmSelectionDto>> GetByIds(params string[] ids)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IEnumerable<FilmSelectionDto>> Search(SearchDto settings)
     {
         throw new NotImplementedException();
     }

@@ -3,6 +3,7 @@ using Prometheus;
 using Serilog;
 using Serilog.Events;
 using Web.GrpcServices;
+using Infrastructure.Configuration;
 
 public class Program
 {
@@ -32,7 +33,8 @@ public class Program
 
             builder.Services.AddControllers();
             builder.Services.AddGrpc();
-
+            builder.Services.AddElastic();
+            builder.Services.AddSearchers();
             
             
             

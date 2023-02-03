@@ -18,8 +18,8 @@ public class PersonDto
 
     public string BirthPlace { get; set; } = null!;
 
-    public List<string> Films { get; set; } = new List<string>();
+    public string[] Films { get; set; } = new string[0];
 
-    public List<string> Nominations { get; set; } = new List<string>();
+    public string[] Nominations { get; set; } = new string[0];
 
 }

@@ -16,7 +16,7 @@ public class SearchServiceGrpc : SearchServiceProto.SearchServiceProtoBase
     }
     public override async Task<AddFilmSelectionResponse> AddFilmSelection(AddFilmSelectionRequest request, ServerCallContext context)
     {
-        var selectionRes = await _selectionRepository.CreateSelection(request.Films.ToList(), request.Name);
+        var selectionRes = await _selectionRepository.CreateSelection(request.Films.ToArray(), request.Name);
         return selectionRes.Adapt<AddFilmSelectionResponse>();
     }
     public override async Task<IsSuccessResponse> DeleteFilmSelection(DeleteFilmSelectionRequest request, ServerCallContext context)

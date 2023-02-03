@@ -25,6 +25,6 @@ public abstract class SearchRepositoryBase<TDocument> : SearchRepository<TDocume
         return selectedCensors;
     }
 
-    public abstract Task<IEnumerable<TDocument>> Search(Search settings);
+    public abstract Task<IEnumerable<TDocument>> Search(SearchDto settings);
     
 }

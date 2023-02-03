@@ -1,5 +1,6 @@
 namespace Core.Dtos;
 
+
 public class FilmDto
 {
     public uint AgeLimit { get; set; }
@@ -52,22 +53,21 @@ public class FilmDto
     public uint NotInterestingCount { get; set; }
 
 
-    public List<string> Images { get; set; } = new List<string>();
+    public string[] Images { get; set; } = new string[0];
 
-    public List<string> Stuff { get; set; } = new List<string>();
+    public string[] Stuff { get; set; } = new string[0];
 
-    public List<string> Articles { get; set; }  = new List<string>();
+    public string[] Articles { get; set; }  = new string[0];
 
-    public List<string> Trailers { get; set; } = new List<string>();
+    public string[] Trailers { get; set; } = new string[0];
 
-    public List<string> Tizers { get; set; }  = new List<string>();
+    public string[] Tizers { get; set; }  = new string[0];
 
-    public List<string> RelatedFilms { get; set; }  = new List<string>();
+    public string[] RelatedFilms { get; set; }  = new string[0];
 
-    public List<string> Genres { get; set; } = new List<string>();
+    public string[] Genres { get; set; } = new string[0];
 
-    public List<string> Nominations { get; set; } = new List<string>();
+    public string[] Nominations { get; set; } = new string[0];
 
-    public List<SeasonDto> Seasons { get; set; } = new List<SeasonDto>();
-
+    public SeasonDto[] Seasons { get; set; } = new SeasonDto[0];
 }

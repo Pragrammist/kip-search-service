@@ -13,7 +13,7 @@ public class SearchPersonRepositoryImpl : SearchRepositoryBase<PersonDto>
     }
    
 
-    public override Task<IEnumerable<PersonDto>> Search(Search settings)
+    public override Task<IEnumerable<PersonDto>> Search(SearchDto settings)
     {
         throw new NotImplementedException();
     }

@@ -11,7 +11,7 @@ public class SearchCensorRepositoryImpl : SearchRepositoryBase<CensorDto>
     {
         
     }
-    public override Task<IEnumerable<CensorDto>> Search(Search settings)
+    public override Task<IEnumerable<CensorDto>> Search(SearchDto settings)
     {
         throw new NotImplementedException();
     }

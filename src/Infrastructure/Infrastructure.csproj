@@ -6,8 +6,9 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj"/>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="NEST" Version="6.8.11"/>
+    <PackageReference Include="Mapster" Version="7.3.0"/>
+    <PackageReference Include="Elasticsearch.Net" Version="7.17.5" />
+    <PackageReference Include="NEST" Version="7.17.5" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.1"/>
   </ItemGroup>
 </Project>
