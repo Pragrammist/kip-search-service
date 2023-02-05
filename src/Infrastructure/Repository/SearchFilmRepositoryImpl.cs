@@ -27,7 +27,12 @@ public class SearchFilmRepositoryImpl : SearchRepositoryBase<FilmDto>
         );
         if(res.Hits.Count < 1)
             return Enumerable.Empty<FilmDto>();
-        var sources = res.Hits.Select(s => s.Source);
+        var sources = res.Hits.Select(s => 
+        {
+            var res = s.Source;
+            res.Id = s.Id;
+            return res;
+        });
         return SortDescriptor(sources, settings) ?? Enumerable.Empty<FilmDto>();
     }
 
@@ -135,37 +140,7 @@ public class SearchFilmRepositoryImpl : SearchRepositoryBase<FilmDto>
 
         
     
-    QueryContainer[] MustDescriptorQ(SearchDto settings)
-    {
-        var qResult = new List<QueryContainer>();
-
-        
-
-        if(settings.Query is not null)
-            qResult.Add(new MultiMatchQuery{
-                Query = settings.Query,
-                MinimumShouldMatch = "2<50%",
-                Fields = new Field[]{
-                    new Field((FilmDto f)=> f.Name, 3),
-                    new Field((FilmDto f)=> f.Description, 2)
-                }
-            });
-
-            // qResult.Add(q => 
-            //     q.MultiMatch(m => m
-            //         .Query(settings.Query)
-            //         .MinimumShouldMatch("2<50%")
-            //         .Fields(fs => fs
-            //             .Field(f => f.Name, 3)
-            //             .Field(f => f.Description, 2)
-            //         )
-            //     )
-            // );
-        
-        
-
-        return qResult.ToArray();
-    }
+    
     async Task <IEnumerable<Func<QueryContainerDescriptor<FilmDto>, QueryContainer>>> MustDescriptor(SearchDto settings) 
     {
         var qResult = new List<Func<QueryContainerDescriptor<FilmDto>, QueryContainer>>();

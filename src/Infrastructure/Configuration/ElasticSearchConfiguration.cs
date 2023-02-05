@@ -28,4 +28,16 @@ public static class ElasticSearchConfiguration
             }); 
         return services;
     }
+
+
+
+    public static IElasticClient CreateElasticClient(string filmsIndexName = "films", string personsIndexName = "persons", string censorsIndexName = "censors", string selectionsIndexName ="filmselections")
+    {
+        var settings = new ConnectionSettings();
+        settings.DefaultFieldNameInferrer(p => p);
+        
+        var client = new ElasticClient(settings);
+        return client;
+    }
 }
+

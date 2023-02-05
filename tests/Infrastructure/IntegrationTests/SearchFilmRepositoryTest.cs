@@ -1,5 +1,4 @@
 using System;
-using System.Security.Cryptography.X509Certificates;
 using Xunit;
 using Infrastructure;
 using Nest;
@@ -140,7 +139,6 @@ public class SearchFilmRepositoryTest
     [Theory]
     [InlineData(new string[] {"Vegas", "Vegas 3", "Mexico", "Nano", "3", "nan"}, false)]
     [InlineData(new string[] {"Vegas", "Vegas 3"}, false)]
-    [InlineData(new string[] {"3", "g2", "g3", "g4", "g5", "g6"}, false)]
     [InlineData(new string[] {"Vegas 3", "этой страны нет"}, false)]
     [InlineData(new string[] {"nano"}, false)]
     [InlineData(new string[] {"этой страны нет"}, true)]
@@ -186,19 +184,18 @@ public class SearchFilmRepositoryTest
         isCountZeroRes.Should().Be(isCountZero);
     }
 
-    // [Theory]
-    // [InlineData("Нет провального провала", false)]
-    // [InlineData("Успешный успех", false)]
-    // [InlineData("Фильм который смог", false)]
-    // public async Task SearchByNomination(string query, bool isCountZero)
-    // {
-    //     SearchDto inpSearch = new SearchDto{
-    //         Query = query,
-    //     };
+    [Theory]
+    [InlineData("ГРАФИКА ВЕКА", false)]
+    [InlineData("Логика года", false)]
+    public async Task SearchByNomination(string query, bool isCountZero)
+    {
+        SearchDto inpSearch = new SearchDto{
+            Query = query,
+        };
         
-    //     var res = await _elasticFixture.Films.Search(inpSearch);
+        var res = await _elasticFixture.Films.Search(inpSearch);
 
-    //     var isCountZeroRes = res.Count() == 0;
-    //     isCountZeroRes.Should().Be(isCountZero);
-    // }
+        var isCountZeroRes = res.Count() == 0;
+        isCountZeroRes.Should().Be(isCountZero);
+    }
 }

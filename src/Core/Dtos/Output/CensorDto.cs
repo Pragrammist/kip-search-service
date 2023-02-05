@@ -6,6 +6,6 @@ public class CensorDto
 
     public string Name { get; set; } = null!;
 
-    public string[] Films { get; private set; } = new string[0];
+    public string[] Films { get; set; } = new string[0];
 
 }
