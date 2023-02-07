@@ -120,7 +120,7 @@ public class SearchCensorRepositoryImpl : SearchRepositoryBase<CensorDto>
     async Task<IEnumerable<string>> RelatedPersonsFilms(SearchDto settings)
     {
         var res = await _elasticClient.SearchAsync<PersonDto>(s => s
-            .Index("films")
+            .Index("persons")
                 .Query(q => q
                     .Bool(b => b
                         .Must(MustPersonDesc(settings))
@@ -135,7 +135,7 @@ public class SearchCensorRepositoryImpl : SearchRepositoryBase<CensorDto>
             var arrInList = s.ToList();
             arrInList.AddRange(s2);
             return arrInList.ToArray();
-        });
+        }).Distinct();
     }
     IEnumerable<Func<QueryContainerDescriptor<PersonDto>, QueryContainer>> MustPersonDesc(SearchDto settings)
     {
@@ -160,8 +160,7 @@ public class SearchCensorRepositoryImpl : SearchRepositoryBase<CensorDto>
             qResult.Add(q => q
                 .Match(m => m
                     .Field(f => f.Name)
-                        .Query(settings.Query
-                    )
+                        .Query(settings.Query)
                 )
             );
         

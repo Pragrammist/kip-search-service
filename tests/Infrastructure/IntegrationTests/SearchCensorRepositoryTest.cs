@@ -9,38 +9,25 @@ using Core;
 
 namespace IntegrationTests;
 
-
 [Collection("Elastic")]
-public class SearchPersonRepositoryTest
+public class SearchCensorRepositoryTest
 {
     readonly ElasticFixture _elasticFixture;
-    public SearchPersonRepositoryTest(ElasticFixture elasticFixture)
+    public SearchCensorRepositoryTest(ElasticFixture elasticFixture)
     {
         _elasticFixture = elasticFixture;
     }
-
     [Theory]
-    [InlineData("Папич Алексей Юрьевич", false)]
-    [InlineData("Почти гена букин", false)]
-    [InlineData("Карьера супер просто", false)]
+    [InlineData("лучши фильмы по версии кого-то другого", false)]
+    [InlineData("Супер герои", false)]
+    [InlineData("Букин Алексей Петрович", false)]
     [InlineData("Бря... скрряяя па па па па", true)]
     public async Task SearchByQuery(string query, bool isZeroShould)
     {
         SearchDto settings = new SearchDto {
             Query = query
         };
-        var res = await _elasticFixture.Persons.Search(settings);
-        var isZero = res.Count() == 0;
-        isZero.Should().Be(isZeroShould);
-    }
-    [Theory]
-    [InlineData("росский фильм про какое-то гавно", false)]
-    public async Task SearchByQueryToRelatedFilms(string query, bool isZeroShould)
-    {
-        SearchDto settings = new SearchDto {
-            Query = query
-        };
-        var res = await _elasticFixture.Persons.Search(settings);
+        var res = await _elasticFixture.Censors.Search(settings);
         var isZero = res.Count() == 0;
         isZero.Should().Be(isZeroShould);
     }
@@ -51,7 +38,7 @@ public class SearchPersonRepositoryTest
         SearchDto settings = new SearchDto {
             Genres = genres
         };
-        var res = await _elasticFixture.Persons.Search(settings);
+        var res = await _elasticFixture.Censors.Search(settings);
         var isZero = res.Count() == 0;
         isZero.Should().Be(isZeroShould);
     }
@@ -63,7 +50,7 @@ public class SearchPersonRepositoryTest
         SearchDto settings = new SearchDto {
             KindOfFilm = filmType
         };
-        var res = await _elasticFixture.Persons.Search(settings);
+        var res = await _elasticFixture.Censors.Search(settings);
         var isZero = res.Count() == 0;
         isZero.Should().Be(isZeroShould);
     }
@@ -76,7 +63,7 @@ public class SearchPersonRepositoryTest
         SearchDto settings = new SearchDto {
             ReleaseType = releaseType
         };
-        var res = await _elasticFixture.Persons.Search(settings);
+        var res = await _elasticFixture.Censors.Search(settings);
         var isZero = res.Count() == 0;
         isZero.Should().Be(isZeroShould);
     }
@@ -89,35 +76,7 @@ public class SearchPersonRepositoryTest
         SearchDto settings = new SearchDto {
             AgeLimit = (uint)ageLimit
         };
-        var res = await _elasticFixture.Persons.Search(settings);
-        var isZero = res.Count() == 0;
-        isZero.Should().Be(isZeroShould);
-    }
-    [Theory]
-    [InlineData("2004-12-29", false)]
-    [InlineData("1999-12-29", false)]
-    [InlineData("1989-03-13", false)]
-    [InlineData("2023-01-01", true)]
-    public async Task SearchWithDateTimeRangeFrom(string from, bool isZeroShould)
-    {
-        SearchDto settings = new SearchDto {
-            From = DateTime.Parse(from)
-        };
-        var res = await _elasticFixture.Persons.Search(settings);
-        var isZero = res.Count() == 0;
-        isZero.Should().Be(isZeroShould);
-    }
-    [Theory]
-    [InlineData("2004-12-29", false)]
-    [InlineData("1999-12-29", false)]
-    [InlineData("1989-03-13", false)]
-    [InlineData("1800-01-01", true)]
-    public async Task SearchWithDateTimeRangeTo(string to, bool isZeroShould)
-    {
-        SearchDto settings = new SearchDto {
-            To = DateTime.Parse(to)
-        };
-        var res = await _elasticFixture.Persons.Search(settings);
+        var res = await _elasticFixture.Censors.Search(settings);
         var isZero = res.Count() == 0;
         isZero.Should().Be(isZeroShould);
     }
@@ -129,7 +88,7 @@ public class SearchPersonRepositoryTest
         SearchDto settings = new SearchDto {
             KindOfPerson = personType
         };
-        var res = await _elasticFixture.Persons.Search(settings);
+        var res = await _elasticFixture.Censors.Search(settings);
         var isZero = res.Count() == 0;
         isZero.Should().Be(isZeroShould);
     }
@@ -142,7 +101,7 @@ public class SearchPersonRepositoryTest
         SearchDto settings = new SearchDto {
             Sort = sort
         };
-        var res = await _elasticFixture.Persons.Search(settings);
+        var res = await _elasticFixture.Censors.Search(settings);
         var isZero = res.Count() == 0;
         isZero.Should().Be(isZeroShould);
     }
