@@ -15,8 +15,8 @@ public abstract class SearchRepositoryBase<TDocument> : SearchRepository<TDocume
     public async virtual Task<IEnumerable<TDocument>> GetByIds(params string[] ids)
     {
         var res = await _elasticClient.SearchAsync<TDocument>(s => s.Index("censors").Query(q => 
-                q.Terms(t => 
-                    t.Terms(ids).Field("Id")
+                q.Ids(id => 
+                    id.Values(ids)
                 )
             )
         );

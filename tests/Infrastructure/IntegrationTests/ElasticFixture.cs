@@ -20,7 +20,7 @@ public class ElasticFixture : IDisposable
 
     public SearchRepository<PersonDto> Persons { get; }
 
-    public SelectionRepository Selections { get; }
+    public SearchRepository<FilmSelectionDto> Selections { get; }
 
     public ElasticFixture()
     {

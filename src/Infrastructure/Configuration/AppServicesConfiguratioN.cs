@@ -13,7 +13,7 @@ public static class AppServicesConfiguration
         services.AddScoped<SearchRepository<CensorDto>, SearchCensorRepositoryImpl>();
         services.AddScoped<SearchRepository<FilmDto>, SearchFilmRepositoryImpl>();
         services.AddScoped<SearchRepository<PersonDto>, SearchPersonRepositoryImpl>();
-        services.AddScoped<SelectionRepository, SelectionRepositoryImpl>();
+        services.AddScoped<SearchRepository<FilmSelectionDto>, SelectionRepositoryImpl>();
         return services;
     }
 

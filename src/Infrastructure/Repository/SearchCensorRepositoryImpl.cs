@@ -47,7 +47,7 @@ public class SearchCensorRepositoryImpl : SearchRepositoryBase<CensorDto>
         if(settings.Sort == SortBy.POPULARIY){
             return await toSearch.ToAsyncEnumerable().OrderByDescendingAwait(async c => 
             {
-                var films = await PersonFilms(c);
+                var films = await CensorFilms(c);
                 var avgWatched = films.Average(a => a.WatchedCount);
                 return avgWatched;
             }
@@ -56,13 +56,13 @@ public class SearchCensorRepositoryImpl : SearchRepositoryBase<CensorDto>
         else
             return await toSearch.ToAsyncEnumerable().OrderByDescendingAwait(async c => 
             {
-                var films = await PersonFilms(c);
+                var films = await CensorFilms(c);
                 var avgScore = films.Average(a => (a.Score * a.ScoreCount + 1) / (++a.ScoreCount));
                 return avgScore;
             }
             ).ToListAsync();
     }
-    async Task<IEnumerable<FilmDto>> PersonFilms(CensorDto censor)
+    async Task<IEnumerable<FilmDto>> CensorFilms(CensorDto censor)
     {
         var films = await _elasticClient.SearchAsync<FilmDto>(s => s
                 .Index("films")
