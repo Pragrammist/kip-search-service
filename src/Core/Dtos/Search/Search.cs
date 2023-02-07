@@ -12,9 +12,9 @@ public class SearchDto
 
     public string[]? Countries { get; set; }
 
-    public DateTime From { get; set; } = new DateTime(1887, 1, 1, 0, 0, 0);
+    public DateTime? From { get; set; }
 
-    public DateTime To { get; set; } = new DateTime(2023, 01, 28, 0, 0, 0);
+    public DateTime? To { get; set; } 
 
     public SortBy? Sort { get; set; }  
 

@@ -1,7 +1,5 @@
 using System;
 using Xunit;
-using Infrastructure;
-using Nest;
 using System.Linq;
 using Core.Dtos.Search;
 using System.Threading.Tasks;

@@ -36,7 +36,13 @@ public class SearchFilmRepositoryImpl : SearchRepositoryBase<FilmDto>
         return SortDescriptor(sources, settings) ?? Enumerable.Empty<FilmDto>();
     }
 
-
+    void SetDefaultDateTimeRange(SearchDto settings)
+    {
+        if(settings.From is null)
+            settings.From = new DateTime(1887, 1, 1, 0, 0, 0);
+        if(settings.To is null) 
+            settings.To = new DateTime(2023, 01, 28, 0, 0, 0); 
+    }
 
 
     IEnumerable<FilmDto> SortDescriptor(IEnumerable<FilmDto> toSort, SearchDto settings)
@@ -48,7 +54,7 @@ public class SearchFilmRepositoryImpl : SearchRepositoryBase<FilmDto>
             return toSort.OrderByDescending(f => f.ViewCount);
         
         if(settings.Sort == Core.SortBy.RATING)
-            return toSort.OrderByDescending(f => f.Score * f.ScoreCount);
+            return toSort.OrderByDescending(a => (a.Score * a.ScoreCount + 1) / (++a.ScoreCount));
 
         else
             return toSort.OrderByDescending(f => GiveNotNullFieldOrDefault(f, DateTime.MinValue));
@@ -107,7 +113,8 @@ public class SearchFilmRepositoryImpl : SearchRepositoryBase<FilmDto>
         if(settings.AgeLimit is not null)
             qResult.Add(f => f.Range(r => r.LessThanOrEquals(settings.AgeLimit).Field(f => f.AgeLimit)));
         
-        
+        SetDefaultDateTimeRange(settings);
+
         qResult.Add(f => DateTimeFilter(f, settings));
         
         return qResult;
@@ -246,20 +253,4 @@ public class SearchFilmRepositoryImpl : SearchRepositoryBase<FilmDto>
         
         return qResult;
     }
-    
-    
-
-
-    Fields FilmQuerySearchFields()
-    {
-        string[] resExpr = new string[] 
-        {
-            $"{nameof(FilmDto.Name).ToLower()}^5",
-            $"{nameof(FilmDto.Description).ToLower()}^4", 
-            
-            //$"{nameof(FilmDto.Articles)}", !! искать по тексту статью по нужной сткроке(query)
-        };
-        return resExpr;
-    }
-
 }
