@@ -13,6 +13,9 @@
     <PackageReference Include="Mapster" Version="7.3.0"/>
   </ItemGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="MinimalApiPlayground.Tests" />
+  </ItemGroup>
+  <ItemGroup>
     <Protobuf Include="Protos\SearchServiceProto.proto" GrpcServices="Server"/>
     <PackageReference Include="Google.Protobuf" Version="3.21.12"/>
     <PackageReference Include="Grpc.AspNetCore" Version="2.50.0"/>

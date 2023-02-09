@@ -2,20 +2,21 @@ using System.Linq.Expressions;
 using Core.Dtos;
 using Core.Dtos.Search;
 using Nest;
+using Core.Repositories;
 
 namespace Infrastructure.Repositories;
 
-public class SearchFilmRepositoryImpl : SearchRepositoryBase<FilmDto>
+public class SearchFilmRepositoryImpl : RepositoryBase, SearchRepository<FilmDto>
 {
     
-    public SearchFilmRepositoryImpl(IElasticClient elasticClient) : base(elasticClient) { }
+    public SearchFilmRepositoryImpl(IElasticClient elasticClient) : base(elasticClient, "films") { }
     
 
-    public async override Task<IEnumerable<FilmDto>> Search(SearchDto settings)
+    public async Task<IEnumerable<FilmDto>> Search(SearchDto settings)
     {
         var mustDesc = await MustDescriptor(settings);
         var res = await _elasticClient.SearchAsync<FilmDto>(s => 
-            s.Index("films")
+            s.Index(index)
             .From((int)(settings.Take * (settings.Page - 1)))
             .Size((int)settings.Take)
             .Query(q => 

@@ -7,18 +7,18 @@ using Mapster;
 using Elasticsearch;
 
 namespace Infrastructure.Repositories;
-public class SelectionRepositoryImpl : SearchRepositoryBase<FilmSelectionDto>
+public class SelectionRepositoryImpl : RepositoryBase, SearchRepository<FilmSelectionDto>
 {
     
-    public SelectionRepositoryImpl(IElasticClient elasticClient) : base(elasticClient)
+    public SelectionRepositoryImpl(IElasticClient elasticClient) : base(elasticClient, "censors")
     {
 
     }
-    public override async Task<IEnumerable<FilmSelectionDto>> Search(SearchDto settings)
+    public async Task<IEnumerable<FilmSelectionDto>> Search(SearchDto settings)
     {
         var shouldDesc = await ShouldDesc(settings);
         var res = await _elasticClient.SearchAsync<FilmSelectionDto>(s => s
-            .Index("censors")
+            .Index(index)
             .Take((int)settings.Take)
             .Skip((int)(settings.Take * (settings.Page - 1)))
             .Query(q => q

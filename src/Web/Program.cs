@@ -32,10 +32,8 @@ public class Program
             // Add services to the container.
 
             builder.Services.AddControllers();
-            builder.Services.AddGrpc();
             builder.Services.AddElastic();
             builder.Services.AddSearchers();
-            
             
             
             
@@ -43,12 +41,11 @@ public class Program
             builder.Services.AddEndpointsApiExplorer()
                             .AddSwaggerGen(options => {
                 var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename), includeControllerXmlComments: true);
+                options.IncludeXmlComments(System.IO.Path.Combine(AppContext.BaseDirectory, xmlFilename), includeControllerXmlComments: true);
             });
             
 
             var app = builder.Build();
-
             app.UseSerilogRequestLogging();
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
@@ -59,7 +56,8 @@ public class Program
 
             app.UseMetricServer();
             app.UseHttpMetrics(options => options.ReduceStatusCodeCardinality());
-            app.UseGrpcMetrics();
+            
+            
 
             app.UseSwagger();
             app.UseSwaggerUI(options => {
@@ -71,10 +69,8 @@ public class Program
 
             app.MapMetrics();
             
-            app.MapGrpcService<SearchServiceGrpc>();
-            
             app.MapControllers();
-
+            
             app.Run();
         }
         catch(Exception ex)

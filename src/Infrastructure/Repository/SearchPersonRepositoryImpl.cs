@@ -3,24 +3,24 @@ using Core;
 using Core.Dtos;
 using Core.Dtos.Search;
 using Nest;
-using System.Linq;
+using Core.Repositories;
 
 namespace Infrastructure.Repositories;
 
-public class SearchPersonRepositoryImpl : SearchRepositoryBase<PersonDto>
+public class SearchPersonRepositoryImpl : RepositoryBase, SearchRepository<PersonDto>
 {
     
-    public SearchPersonRepositoryImpl(IElasticClient elasticClient) : base(elasticClient)
+    public SearchPersonRepositoryImpl(IElasticClient elasticClient) : base(elasticClient, "persons")
     {
         
     }
    
 
-    public override async Task<IEnumerable<PersonDto>> Search(SearchDto settings)
+    public async Task<IEnumerable<PersonDto>> Search(SearchDto settings)
     {
         var mustDesc = await MustDescriptor(settings);
         var persons = await _elasticClient.SearchAsync<PersonDto>(s => s
-            .Index("persons")
+            .Index(index)
             .Take((int)settings.Take)
             .Skip((int)(settings.Take * (settings.Page - 1)))
             .Query(q => q

@@ -1,22 +1,23 @@
 using Core;
+using Core.Repositories;
 using Core.Dtos;
 using Core.Dtos.Search;
 using Nest;
 
 namespace Infrastructure.Repositories;
 
-public class SearchCensorRepositoryImpl : SearchRepositoryBase<CensorDto>
+public class SearchCensorRepositoryImpl : RepositoryBase, SearchRepository<CensorDto>
 {
     
-    public SearchCensorRepositoryImpl(IElasticClient elasticClient) : base(elasticClient) 
+    public SearchCensorRepositoryImpl(IElasticClient elasticClient) : base(elasticClient, "censors") 
     {
         
     }
-    public override async Task<IEnumerable<CensorDto>> Search(SearchDto settings)
+    public async Task<IEnumerable<CensorDto>> Search(SearchDto settings)
     {
         var shouldDesc = await ShouldDesc(settings);
         var res = await _elasticClient.SearchAsync<CensorDto>(s => s
-            .Index("censors")
+            .Index(index)
             .Take((int)settings.Take)
             .Skip((int)(settings.Take * (settings.Page - 1)))
             .Query(q => q
