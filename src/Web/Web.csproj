@@ -13,7 +13,7 @@
     <PackageReference Include="Mapster" Version="7.3.0"/>
   </ItemGroup>
   <ItemGroup>
-    <InternalsVisibleTo Include="MinimalApiPlayground.Tests" />
+    <InternalsVisibleTo Include="MinimalApiPlayground.Tests"/>
   </ItemGroup>
   <ItemGroup>
     <Protobuf Include="Protos\SearchServiceProto.proto" GrpcServices="Server"/>

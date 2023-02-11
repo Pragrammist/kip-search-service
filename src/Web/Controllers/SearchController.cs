@@ -13,14 +13,26 @@ public class SearchController : ControllerBase
     readonly SearchRepository<CensorDto> _censors;
     readonly SearchInteractor _searchInteractor;
     readonly SearchRepository<FilmSelectionDto> _selections;
+    readonly ByIdRepository<FilmDto> _filmsByIdRepo;
+    readonly ByIdRepository<PersonDto> _personsByIdRepo;
+    readonly ByIdRepository<CensorDto> _censorsByIdRepo;
+    readonly ByIdRepository<FilmSelectionDto> _selectionsByIdRepo;
     public SearchController(
         SearchRepository<ShortFilmDto> films, 
         SearchRepository<PersonDto> persons, 
         SearchRepository<CensorDto> censors, 
         SearchRepository<FilmSelectionDto> selections,
-        SearchInteractor searchInteractor
+        SearchInteractor searchInteractor,
+        ByIdRepository<FilmDto> filmsByIdRepo,
+        ByIdRepository<PersonDto> personsByIdRepo,
+        ByIdRepository<CensorDto> censorsByIdRepo,
+        ByIdRepository<FilmSelectionDto> selectionsByIdRepo
     )
     {
+        _selectionsByIdRepo = selectionsByIdRepo;
+        _censorsByIdRepo = censorsByIdRepo;
+        _personsByIdRepo = personsByIdRepo;
+        _filmsByIdRepo = filmsByIdRepo;
         _films = films;
         _persons = persons;
         _censors = censors;
@@ -59,6 +71,38 @@ public class SearchController : ControllerBase
     {
         return new ObjectResult(
             value: await _searchInteractor.GenerateContent()
+        );
+    }
+
+    [HttpGet("films/{id}")]
+    public async Task<IActionResult> GetFilmById(string id)
+    {
+        return new ObjectResult(
+            value: (await _filmsByIdRepo.GetByIds(id)).FirstOrDefault()
+        );
+    }
+
+    [HttpGet("persons/{id}")]
+    public async Task<IActionResult> GetPersonById(string id)
+    {
+        return new ObjectResult(
+            value: (await _filmsByIdRepo.GetByIds(id)).FirstOrDefault()
+        );
+    }
+
+    [HttpGet("censors/{id}")]
+    public async Task<IActionResult> GetCensorById(string id)
+    {
+        return new ObjectResult(
+            value: (await _filmsByIdRepo.GetByIds(id)).FirstOrDefault()
+        );
+    }
+
+    [HttpGet("selections/{id}")]
+    public async Task<IActionResult> GetSelectionById(string id)
+    {
+        return new ObjectResult(
+            value: (await _filmsByIdRepo.GetByIds(id)).FirstOrDefault()
         );
     }
 }

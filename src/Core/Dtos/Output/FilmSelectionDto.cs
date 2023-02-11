@@ -1,7 +1,7 @@
 
 namespace Core.Dtos;
 
-public class FilmSelectionDto
+public class FilmSelectionDto : Idable
 {
     public string Id  { get; set; } = null!;
 
