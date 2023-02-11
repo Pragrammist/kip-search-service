@@ -16,7 +16,13 @@ public class ElasticFixture : IDisposable
 
     public SearchRepository<CensorDto> Censors { get; }
 
-    public SearchRepository<FilmDto> Films { get; }
+    public SearchRepository<ShortFilmDto> Films { get; }
+
+    public FilmRepository<ShortFilmDto> FilmRepo { get; }
+
+    public ByIdRepository<ShortFilmDto> ByIdFilmRepository { get; }
+
+    public GetManyRepository<FilmTrailer> GetManyRepo { get; }
 
     public SearchRepository<PersonDto> Persons { get; }
 
@@ -33,9 +39,12 @@ public class ElasticFixture : IDisposable
         _elkDataFiller= new DataFiller(_elkClient);
         _elkDataFiller.FillFilmsData();
         Censors = new SearchCensorRepositoryImpl(_elkClient);
-        Films = new SearchFilmRepositoryImpl(_elkClient);
+        Films = new SearchFilmRepositoryImpl<ShortFilmDto>(_elkClient);
         Persons = new SearchPersonRepositoryImpl(_elkClient);
         Selections = new SelectionRepositoryImpl(_elkClient);
+        FilmRepo = new ReadFilmRepositoryImpl(_elkClient);
+        GetManyRepo = new ReadFilmRepositoryImpl(_elkClient);
+        ByIdFilmRepository = new ReadByIdRepoGeneric<ShortFilmDto>(_elkClient, "films");
     }
 
     

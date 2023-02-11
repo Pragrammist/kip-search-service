@@ -8,13 +8,13 @@ namespace Web.Controllers;
 [ApiController]
 public class SearchController : ControllerBase
 {
-    readonly SearchRepository<FilmDto> _films;
+    readonly SearchRepository<ShortFilmDto> _films;
     readonly SearchRepository<PersonDto> _persons;
     readonly SearchRepository<CensorDto> _censors;
     readonly SearchInteractor _searchInteractor;
     readonly SearchRepository<FilmSelectionDto> _selections;
     public SearchController(
-        SearchRepository<FilmDto> films, 
+        SearchRepository<ShortFilmDto> films, 
         SearchRepository<PersonDto> persons, 
         SearchRepository<CensorDto> censors, 
         SearchRepository<FilmSelectionDto> selections,

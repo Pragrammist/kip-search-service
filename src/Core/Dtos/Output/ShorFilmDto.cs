@@ -1,8 +1,8 @@
-using System.Security.Cryptography.X509Certificates;
+using Core;
 
 namespace Core.Dtos;
 
-public class ShortFilmDto
+public class ShortFilmDto : Idable
 {
     public string Id { get; set; } = null!;
 

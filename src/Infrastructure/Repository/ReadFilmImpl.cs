@@ -2,32 +2,14 @@ using System.Linq.Expressions;
 using Core.Repositories;
 using Core.Dtos;
 using Nest;
-
 namespace Infrastructure.Repositories;
 
-public class ReadFilmRepositoryImpl : RepositoryBase, ByIdRepository<ShortFilmDto>, FilmRepository<ShortFilmDto>, GetManyRepository<FilmTrailer>
+public class ReadFilmRepositoryImpl : RepositoryBase, FilmRepository<ShortFilmDto>, GetManyRepository<FilmTrailer>
 {
     
     public ReadFilmRepositoryImpl(IElasticClient elasticClient) : base(elasticClient,"films")
     {
         
-    }
-    public async Task<IEnumerable<ShortFilmDto>> GetByIds(params string[] ids)
-    {
-        var res = await _elasticClient.SearchAsync<ShortFilmDto>(s => s.Index(index)
-            .Query(q => 
-                    q.Ids(id => 
-                        id.Values(ids)
-                    )
-            )
-        );
-
-        var selected = res.Hits.Select(s => {
-            var source = s.Source;
-            source.Id = s.Id;
-            return source;
-        }) ?? Enumerable.Empty<ShortFilmDto>();
-        return selected;
     }
     public async Task<IEnumerable<string>> GetGenres()
     {
@@ -74,5 +56,6 @@ public class ReadFilmRepositoryImpl : RepositoryBase, ByIdRepository<ShortFilmDt
         });
     }
 }
+
 
 
