@@ -18,7 +18,7 @@ public class Program
                 .WriteTo.Http(logstashUrl, queueLimitBytes: null)
                 .CreateLogger();
 
-
+        
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Host.UseSerilog();
@@ -27,12 +27,13 @@ public class Program
 
 
             
-            
+            var elkUrl = configuration["ELASTIC_URL"];
 
             // Add services to the container.
 
             builder.Services.AddControllers();
-            builder.Services.AddElastic();
+            Log.Information("elk_url is {@ElkUrl}", elkUrl);
+            builder.Services.AddElastic(elkUrl);
             builder.Services.AddSearchers();
             
             

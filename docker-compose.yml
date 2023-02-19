@@ -1,0 +1,66 @@
+version: "3.9" 
+
+services:
+  elasticsearch:
+    restart: always
+    container_name: es-searchservice
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.0
+
+    ulimits:
+      nofile: 
+        hard: 65536
+        soft: 65536
+      memlock:
+        soft: -1
+        hard: -1
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - elasticsearch-data-volume:/usr/share/elasticsearch/data
+    environment:
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+      - discovery.type=single-node
+      - "network.host:0.0.0.0"
+    ports:
+      - 9200:9200
+      - 9300:9300
+    networks:
+      - searchservice-net
+
+  kibana:
+    restart: always
+    container_name: kb-searchservice
+    image: kibana:8.6.0
+    depends_on:
+      - elasticsearch
+    ports:
+      - 5601:5601
+    networks:
+      - searchservice-net
+
+  kip-searchservice:
+    restart: always
+    depends_on:
+      - elasticsearch
+    networks:
+      - searchservice-net
+    container_name: "kip-searchservice"
+    image: kip-searchservice
+    environment:
+      - "ELASTIC_URL=http://172.21.0.2:9200"
+      - ASPNETCORE_ENVIRONMENT=Production
+      - LOGSTASH_URL=http://localhost:8080
+    ports:
+      - 5004:80
+
+
+volumes:
+  elasticsearch-data-volume:
+    driver: local
+
+networks:
+  searchservice-net:
+    driver: bridge
+
