@@ -37,6 +37,7 @@ public class FilmDto : Idable
     public int? Fees { get; set; } // сборы
 
 
+    
 
     public double Score { get; set; }
 
@@ -57,6 +58,8 @@ public class FilmDto : Idable
 
     public string[] Stuff { get; set; } = new string[0];
 
+    public IEnumerable<PersonShortDto>? StuffObjects { get; set; }
+
     public string[] Articles { get; set; }  = new string[0];
 
     public string[] Trailers { get; set; } = new string[0];
@@ -64,6 +67,8 @@ public class FilmDto : Idable
     public string[] Tizers { get; set; }  = new string[0];
 
     public string[] RelatedFilms { get; set; }  = new string[0];
+
+    public IEnumerable<FilmShortDto>? RelatedFilmObjects { get; set; }  
 
     public string[] Genres { get; set; } = new string[0];
 

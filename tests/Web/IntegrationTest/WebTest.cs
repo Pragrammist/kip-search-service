@@ -14,10 +14,10 @@ public class WebTest : IClassFixture<WebFixture>
         Web = web;
     } 
     [Theory]
-    [InlineData("/films", "/filmTest")]
-    [InlineData("/persons", "/personTest")]
-    [InlineData("/censors", "/censorTest")]
-    [InlineData("/selections", "/selectionTest")]
+    [InlineData("/films", "/f1")]
+    [InlineData("/persons", "/p1")]
+    [InlineData("/censors", "/c1")]
+    [InlineData("/selections", "/s1")]
     [InlineData("/media")]
     public async Task GetActions(string url, string id = "")
     {

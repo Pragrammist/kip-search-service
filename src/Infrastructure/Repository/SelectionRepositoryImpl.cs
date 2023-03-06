@@ -71,6 +71,7 @@ public class SelectionRepositoryImpl<TSelectionType> : RepositoryBase, SearchRep
             );
         return qResult;
     }
+    
     async Task<IEnumerable<string>> RelatedFilms(SearchDto settings)
     {
         var res = await _elasticClient.SearchAsync<FilmSearchModel>(s => s
@@ -85,6 +86,7 @@ public class SelectionRepositoryImpl<TSelectionType> : RepositoryBase, SearchRep
         ? Enumerable.Empty<string>()
         : res.Hits.Select(h => h.Id);
     }
+    
     async Task<IEnumerable<string>> RelatedPersonsFilms(SearchDto settings)
     {
         var res = await _elasticClient.SearchAsync<PersonSearchModel>(s => s
@@ -105,6 +107,7 @@ public class SelectionRepositoryImpl<TSelectionType> : RepositoryBase, SearchRep
             return arrInList.ToArray();
         }).Distinct();
     }
+    
     IEnumerable<Func<QueryContainerDescriptor<TPersonModel>, QueryContainer>> MustPersonDesc<TPersonModel>(SearchDto settings) where TPersonModel : class
     {
         var qResult = new List<Func<QueryContainerDescriptor<TPersonModel>, QueryContainer>>();
@@ -120,6 +123,7 @@ public class SelectionRepositoryImpl<TSelectionType> : RepositoryBase, SearchRep
                 .Term(KindOfPersonField(), settings.KindOfPerson));
         return qResult;
     }
+    
     IEnumerable<Func<QueryContainerDescriptor<TFilmSearchModel>, QueryContainer>> MustFilmDesc<TFilmSearchModel>(SearchDto settings) where TFilmSearchModel : class
     {
         var qResult = new List<Func<QueryContainerDescriptor<TFilmSearchModel>, QueryContainer>>();
@@ -160,6 +164,7 @@ public class SelectionRepositoryImpl<TSelectionType> : RepositoryBase, SearchRep
             );
         return qResult;
     }
+    
     IEnumerable<Func<QueryContainerDescriptor<TFilmSearchModel>, QueryContainer>> ShouldCountriesDesc<TFilmSearchModel>(SearchDto settings) where TFilmSearchModel : class
     {
         var qResult = new List<Func<QueryContainerDescriptor<TFilmSearchModel>, QueryContainer>>();

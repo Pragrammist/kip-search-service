@@ -1,6 +1,6 @@
 namespace Infrastructure.Repositories;
 
-public class SelectionSearchModel
+public class FilmSelectionSearchModel
 {
     public string Id  { get; set; } = null!;
 

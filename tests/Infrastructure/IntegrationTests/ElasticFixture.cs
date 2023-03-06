@@ -16,17 +16,18 @@ public class ElasticFixture : IDisposable
 
     public SearchRepository<CensorDto> Censors { get; }
 
-    public SearchRepository<ShortFilmDto> Films { get; }
+    public SearchRepository<FilmShortDto> Films { get; }
 
-    public FilmRepository<ShortFilmDto> FilmRepo { get; }
+    public FilmRepository<FilmShortDto> FilmRepo { get; }
 
-    public ByIdRepository<ShortFilmDto> ByIdFilmRepository { get; }
+    public ByIdRepository<FilmShortDto> ByIdFilmRepository { get; }
 
     public GetManyRepository<FilmTrailer> GetManyRepo { get; }
 
     public SearchRepository<PersonDto> Persons { get; }
 
     public SearchRepository<FilmSelectionDto> Selections { get; }
+
 
     public ElasticFixture()
     {
@@ -39,12 +40,13 @@ public class ElasticFixture : IDisposable
         _elkDataFiller= new DataFiller(_elkClient);
         _elkDataFiller.FillFilmsData();
         Censors = new SearchCensorRepositoryImpl<CensorDto>(_elkClient);
-        Films = new SearchFilmRepositoryImpl<ShortFilmDto>(_elkClient);
+        Films = new SearchFilmRepositoryImpl<FilmShortDto>(_elkClient);
         Persons = new SearchPersonRepositoryImpl<PersonDto>(_elkClient);
         Selections = new SelectionRepositoryImpl<FilmSelectionDto>(_elkClient);
-        FilmRepo = new ReadFilmRepositoryImpl<ShortFilmDto>(_elkClient);
+        FilmRepo = new ReadFilmRepositoryImpl<FilmShortDto>(_elkClient);
         GetManyRepo = new ReadFilmRepositoryImpl<FilmTrailer>(_elkClient);
-        ByIdFilmRepository = new ReadByIdRepoGeneric<ShortFilmDto>(_elkClient, "films");
+        ByIdFilmRepository = new ReadByIdRepoGeneric<FilmShortDto>(_elkClient, "films");
+        
     }
 
     
@@ -65,9 +67,9 @@ public class ElasticFixture : IDisposable
             _elkClient = elkClient;
         }
         
-        FilmDto[] GetFilms() => new FilmDto[]
+        FilmSearchModel[] GetFilms() => new FilmSearchModel[]
         {
-            new FilmDto {
+            new FilmSearchModel {
                 Id = "f1",
                 AgeLimit = 12,
                 Articles = new string[] { "a1", "a2", "a3" },
@@ -102,7 +104,7 @@ public class ElasticFixture : IDisposable
                 RelatedFilms = new string[] { "ref" },
                 Tizers = new string[] { "ref" }
             },
-            new FilmDto {
+            new FilmSearchModel {
                 Id = "f2",
                 AgeLimit = 18,
                 Articles = new string[] { "a3", "a4", "a5" },
@@ -128,12 +130,12 @@ public class ElasticFixture : IDisposable
                 WatchedCount = 300,
                 WillWatchCount = 410,
                 Release = DateTime.Parse("2014-03-02"),
-                Seasons = new SeasonDto[] { 
-                    new SeasonDto {
+                Seasons = new SeasonSearchModel[] { 
+                    new SeasonSearchModel {
                         Num = 1,
                         Banner = "ref",
-                        Serias = new SeriaDto[] {
-                            new SeriaDto { 
+                        Serias = new SeriaSearchModel[] {
+                            new SeriaSearchModel { 
                                 IdFile = "ref",
                                 Num = 1
                             }
@@ -149,7 +151,7 @@ public class ElasticFixture : IDisposable
                 RelatedFilms = new string[] { "ref" },
                 Tizers = new string[] { "ref" }
             },
-            new FilmDto {
+            new FilmSearchModel {
                 Id = "f3",
                 AgeLimit = 14,
                 Articles = new string[] { "a7", "a8", "a9" },
@@ -183,7 +185,7 @@ public class ElasticFixture : IDisposable
                 Tizers = new string[] { "ref" },
                 
             },
-            new FilmDto {
+            new FilmSearchModel {
                 Id = "f4",
                 AgeLimit = 6,
                 Articles = new string[] { "a7", "a8", "a9" },
@@ -217,7 +219,7 @@ public class ElasticFixture : IDisposable
                 Tizers = new string[] { "ref" },
                 
             },
-            new FilmDto {
+            new FilmSearchModel {
                 Id = "f5",
                 AgeLimit = 6,
                 Articles = new string[] { "a1", "a2", "a3" },
@@ -251,7 +253,7 @@ public class ElasticFixture : IDisposable
                 RelatedFilms = new string[] { "ref" },
                 Tizers = new string[] { "ref" }
             },
-            new FilmDto {
+            new FilmSearchModel {
                 Id = "f6",
                 AgeLimit = 18,
                 Articles = new string[] { "a7", "a8", "a9" },
@@ -286,40 +288,40 @@ public class ElasticFixture : IDisposable
                 Tizers = new string[] { "ref" }
             },
         };
-        FilmSelectionDto[] GetSelections() => new FilmSelectionDto[]
+        FilmSelectionSearchModel[] GetSelections() => new FilmSelectionSearchModel[]
         {
             
-            new FilmSelectionDto{
+            new FilmSelectionSearchModel{
                 Id = "s1",
                 Films = new[] {"f1", "f3"},
                 Name = "Отдохните вечером"
             },
-            new FilmSelectionDto{
+            new FilmSelectionSearchModel{
                 Id = "s2",
                 Films = new[] {"f2", "f6", "f4"},
                 Name = "Приятно проведите время"
             },
-            new FilmSelectionDto{
+            new FilmSelectionSearchModel{
                 Id = "s3",
                 Films = new[] {"f5"},
                 Name = "Секретный фильм (:"
             }
         };
-        CensorDto[] GetCensors() => new CensorDto[] 
+        CensorSearchModel[] GetCensors() => new CensorSearchModel[] 
         {
-            new CensorDto
+            new CensorSearchModel
             {
                 Id = "c1",
                 Films = new[]{"f1", "f2", "f3"},
                 Name = "лучши фильмы по версии кого-то другого"
             },
-            new CensorDto
+            new CensorSearchModel
             {
                 Id = "c2",
                 Films = new[]{"f1", "f3", "f4"},
                 Name = "меня роняли"
             },
-            new CensorDto
+            new CensorSearchModel
             {
                 Id = "c2",
                 Films = new[]{"f1", "f2", "f4"},
@@ -328,8 +330,8 @@ public class ElasticFixture : IDisposable
 
 
         };
-        PersonDto[] GetPersons() => new PersonDto[] {
-            new PersonDto { 
+        PersonSearchModel[] GetPersons() => new PersonSearchModel[] {
+            new PersonSearchModel { 
                 Id = "p1",
                 Birthday = DateTime.Parse("2004-12-29"),
                 BirthPlace = "В канаве",
@@ -341,7 +343,7 @@ public class ElasticFixture : IDisposable
                 Nominations = new string[] {"Почти гена букин"},
                 Photo = "ref",
             },
-            new PersonDto { 
+            new PersonSearchModel { 
                 Id = "p2",
                 Birthday = DateTime.Parse("1999-12-29"),
                 BirthPlace = "Таганрог",
@@ -353,7 +355,7 @@ public class ElasticFixture : IDisposable
                 Nominations = new string[] {"Выигрывает в казино", "стример года"},
                 Photo = "ref",
             },
-            new PersonDto { 
+            new PersonSearchModel { 
                 Id = "p3",
                 Birthday = DateTime.Parse("1989-03-13"),
                 BirthPlace = "Владивосток",
@@ -378,30 +380,6 @@ public class ElasticFixture : IDisposable
 
             var censrorsResponse =_elkClient.IndexMany(GetCensors(), CENSOR_INDEX);
         }
-        public void ClearFromData()
-        {
-            // var selectionsResponse =_elkClient.DeleteMany(GetSelections(), SELECTION_INDEX);
-            
-            
-            // var censrorsResponse =_elkClient.DeleteMany(GetCensors(), CENSOR_INDEX);
-            
-
-            // var filmsResponse =_elkClient.DeleteMany(GetFilms(), FILM_INDEX);
-            
-
-            // var personsResponse =_elkClient.DeleteMany(GetPersons(), PERSON_INDEX);
-
-            DeleteByIdMany<FilmDto>(GetFilms().Select(s => s.Id), FILM_INDEX);
-            DeleteByIdMany<PersonDto>(GetPersons().Select(s => s.Id), PERSON_INDEX);
-            DeleteByIdMany<FilmSelectionDto>(GetPersons().Select(s => s.Id), SELECTION_INDEX);
-            DeleteByIdMany<CensorDto>(GetPersons().Select(s => s.Id), CENSOR_INDEX);
-            
-        }
-        private void DeleteByIdMany<TDocument>(IEnumerable<string> ids, string index) where TDocument: class
-        {
-            foreach(var id in ids)
-                _elkClient.Delete<TDocument>(id, s => s.Index(index));
-
-        }
+        
     }
 }

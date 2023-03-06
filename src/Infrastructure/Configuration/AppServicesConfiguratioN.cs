@@ -12,34 +12,52 @@ public static class AppServicesConfiguration
 {
     public static IServiceCollection AddSearchers(this IServiceCollection services)
     {
-        services.AddTransient<SearchRepository<CensorDto>, SearchCensorRepositoryImpl<CensorDto>>();
-        services.AddTransient<SearchRepository<ShortFilmDto>, SearchFilmRepositoryImpl<ShortFilmDto>>();
-        services.AddTransient<SearchRepository<PersonDto>, SearchPersonRepositoryImpl<PersonDto>>();
-        services.AddTransient<SearchRepository<FilmSelectionDto>, SelectionRepositoryImpl<FilmSelectionDto>>();
-        services.AddTransient<ByIdRepository<ShortFilmDto>, ReadByIdRepoGeneric<ShortFilmDto>>(services => {
+        services.AddSingleton<SearchRepository<CensorShortDto>, SearchCensorRepositoryImpl<CensorShortDto>>();
+        services.AddSingleton<SearchRepository<FilmShortDto>, SearchFilmRepositoryImpl<FilmShortDto>>();
+        services.AddSingleton<SearchRepository<PersonShortDto>, SearchPersonRepositoryImpl<PersonShortDto>>();
+        services.AddSingleton<SearchRepository<SelectionShortDto>, SelectionRepositoryImpl<SelectionShortDto>>();
+        services.AddSingleton<SearchRepository<FilmSelectionDto>, SelectionRepositoryImpl<FilmSelectionDto>>();
+        services.AddSingleton<SearchRepository<FilmTrailer>, SearchFilmRepositoryImpl<FilmTrailer>>();
+        services.AddSingleton<FilmRepository<FilmShortDto>, ReadFilmRepositoryImpl<FilmShortDto>>();
+        services.AddSingleton<GetManyRepository<FilmTrailer>, ReadFilmRepositoryImpl<FilmTrailer>>();
+        services.AddSingleton<SearchInteractor>();
+        services.AddByIdRepositories();
+        return services;
+    }
+    public static IServiceCollection AddByIdRepositories(this IServiceCollection services)
+    {
+        services.AddSingleton<ByIdRepository<FilmShortDto>, ReadByIdRepoGeneric<FilmShortDto>>(services => {
             var elastic = services.GetRequiredService<IElasticClient>();
-            return new ReadByIdRepoGeneric<ShortFilmDto>(elastic, "films");
+            return new ReadByIdRepoGeneric<FilmShortDto>(elastic, "films");
         });
-        services.AddTransient<ByIdRepository<FilmDto>, ReadByIdRepoGeneric<FilmDto>>(services => {
+        services.AddSingleton<ByIdRepository<FilmDto>, ReadByIdRepoGeneric<FilmDto>>(services => {
             var elastic = services.GetRequiredService<IElasticClient>();
             return new ReadByIdRepoGeneric<FilmDto>(elastic, "films");
         });
-        services.AddTransient<ByIdRepository<PersonDto>, ReadByIdRepoGeneric<PersonDto>>(services => {
+        services.AddSingleton<ByIdRepository<PersonDto>, ReadByIdRepoGeneric<PersonDto>>(services => {
             var elastic = services.GetRequiredService<IElasticClient>();
             return new ReadByIdRepoGeneric<PersonDto>(elastic, "persons");
         });
-        services.AddTransient<ByIdRepository<CensorDto>, ReadByIdRepoGeneric<CensorDto>>(services => {
+        services.AddSingleton<ByIdRepository<PersonShortDto>, ReadByIdRepoGeneric<PersonShortDto>>(services => {
+            var elastic = services.GetRequiredService<IElasticClient>();
+            return new ReadByIdRepoGeneric<PersonShortDto>(elastic, "persons");
+        });
+        services.AddSingleton<ByIdRepository<CensorDto>, ReadByIdRepoGeneric<CensorDto>>(services => {
             var elastic = services.GetRequiredService<IElasticClient>();
             return new ReadByIdRepoGeneric<CensorDto>(elastic, "censors");
         });
-        services.AddTransient<ByIdRepository<FilmSelectionDto>, ReadByIdRepoGeneric<FilmSelectionDto>>(services => {
+        services.AddSingleton<ByIdRepository<CensorShortDto>, ReadByIdRepoGeneric<CensorShortDto>>(services => {
+            var elastic = services.GetRequiredService<IElasticClient>();
+            return new ReadByIdRepoGeneric<CensorShortDto>(elastic, "censors");
+        });
+        services.AddSingleton<ByIdRepository<FilmSelectionDto>, ReadByIdRepoGeneric<FilmSelectionDto>>(services => {
             var elastic = services.GetRequiredService<IElasticClient>();
             return new ReadByIdRepoGeneric<FilmSelectionDto>(elastic, "selections");
         });
-        services.AddTransient<SearchRepository<FilmTrailer>, SearchFilmRepositoryImpl<FilmTrailer>>();
-        services.AddTransient<FilmRepository<ShortFilmDto>, ReadFilmRepositoryImpl<ShortFilmDto>>();
-        services.AddTransient<GetManyRepository<FilmTrailer>, ReadFilmRepositoryImpl<FilmTrailer>>();
-        services.AddTransient<SearchInteractor>();
+        services.AddSingleton<ByIdRepository<SelectionShortDto>, ReadByIdRepoGeneric<SelectionShortDto>>(services => {
+            var elastic = services.GetRequiredService<IElasticClient>();
+            return new ReadByIdRepoGeneric<SelectionShortDto>(elastic, "selections");
+        });
         return services;
     }
 

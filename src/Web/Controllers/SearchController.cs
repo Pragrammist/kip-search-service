@@ -8,31 +8,19 @@ namespace Web.Controllers;
 [ApiController]
 public class SearchController : ControllerBase
 {
-    readonly SearchRepository<ShortFilmDto> _films;
-    readonly SearchRepository<PersonDto> _persons;
-    readonly SearchRepository<CensorDto> _censors;
+    readonly SearchRepository<FilmShortDto> _films;
+    readonly SearchRepository<PersonShortDto> _persons;
+    readonly SearchRepository<CensorShortDto> _censors;
     readonly SearchInteractor _searchInteractor;
-    readonly SearchRepository<FilmSelectionDto> _selections;
-    readonly ByIdRepository<FilmDto> _filmsByIdRepo;
-    readonly ByIdRepository<PersonDto> _personsByIdRepo;
-    readonly ByIdRepository<CensorDto> _censorsByIdRepo;
-    readonly ByIdRepository<FilmSelectionDto> _selectionsByIdRepo;
+    readonly SearchRepository<SelectionShortDto> _selections;
     public SearchController(
-        SearchRepository<ShortFilmDto> films, 
-        SearchRepository<PersonDto> persons, 
-        SearchRepository<CensorDto> censors, 
-        SearchRepository<FilmSelectionDto> selections,
-        SearchInteractor searchInteractor,
-        ByIdRepository<FilmDto> filmsByIdRepo,
-        ByIdRepository<PersonDto> personsByIdRepo,
-        ByIdRepository<CensorDto> censorsByIdRepo,
-        ByIdRepository<FilmSelectionDto> selectionsByIdRepo
+        SearchRepository<FilmShortDto> films, 
+        SearchRepository<PersonShortDto> persons, 
+        SearchRepository<CensorShortDto> censors, 
+        SearchRepository<SelectionShortDto> selections,
+        SearchInteractor searchInteractor
     )
     {
-        _selectionsByIdRepo = selectionsByIdRepo;
-        _censorsByIdRepo = censorsByIdRepo;
-        _personsByIdRepo = personsByIdRepo;
-        _filmsByIdRepo = filmsByIdRepo;
         _films = films;
         _persons = persons;
         _censors = censors;
@@ -70,40 +58,40 @@ public class SearchController : ControllerBase
     public async Task<IActionResult> GetMediaContent()
     {
         return new ObjectResult(
-            value: await _searchInteractor.GenerateContent()
+            value: await _searchInteractor.GenerateMediaContent()
         );
     }
 
     [HttpGet("films/{id}")]
     public async Task<IActionResult> GetFilmById(string id)
     {
-        return new ObjectResult(
-            value: (await _filmsByIdRepo.GetByIds(id)).FirstOrDefault()
-        );
+        var searchObject = await _searchInteractor.FindFilmById(id);
+         
+        return searchObject is null ? BadRequest() : new ObjectResult(searchObject);
     }
 
     [HttpGet("persons/{id}")]
     public async Task<IActionResult> GetPersonById(string id)
     {
-        return new ObjectResult(
-            value: (await _filmsByIdRepo.GetByIds(id)).FirstOrDefault()
-        );
+        var searchObject = await _searchInteractor.FindPersonById(id);
+         
+        return searchObject is null ? BadRequest() : new ObjectResult(searchObject);
     }
 
     [HttpGet("censors/{id}")]
     public async Task<IActionResult> GetCensorById(string id)
     {
-        return new ObjectResult(
-            value: (await _filmsByIdRepo.GetByIds(id)).FirstOrDefault()
-        );
+        var searchObject = await _searchInteractor.FindCensorById(id);
+         
+        return searchObject is null ? BadRequest() : new ObjectResult(searchObject);
     }
 
     [HttpGet("selections/{id}")]
     public async Task<IActionResult> GetSelectionById(string id)
     {
-        return new ObjectResult(
-            value: (await _filmsByIdRepo.GetByIds(id)).FirstOrDefault()
-        );
+        var searchObject = await _searchInteractor.FindSelectionById(id);
+         
+        return searchObject is null ? BadRequest() : new ObjectResult(searchObject);
     }
 }
 

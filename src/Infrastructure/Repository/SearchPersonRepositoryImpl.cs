@@ -124,6 +124,7 @@ public class SearchPersonRepositoryImpl<TPerson> : RepositoryBase, SearchReposit
         
         return res.Hits.Select(s => s.Id);
     }
+    
     IEnumerable<Func<QueryContainerDescriptor<TFilmType>, QueryContainer>> MustDescriptorForFilm<TFilmType>(SearchDto settings) where TFilmType : class
     {
         var qResult = new List<Func<QueryContainerDescriptor<TFilmType>, QueryContainer>>();

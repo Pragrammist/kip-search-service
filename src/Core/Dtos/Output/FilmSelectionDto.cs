@@ -7,7 +7,7 @@ public class FilmSelectionDto : Idable
 
     public string[] Films { get; set; } = new string[0];
 
-    public IEnumerable<ShortFilmDto> FilmObjects { get; set; } = Enumerable.Empty<ShortFilmDto>();
+    public IEnumerable<FilmShortDto> FilmObjects { get; set; } = Enumerable.Empty<FilmShortDto>();
 
     public string Name { get; set; } = null!;
 }
