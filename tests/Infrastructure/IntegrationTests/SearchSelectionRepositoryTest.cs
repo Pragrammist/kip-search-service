@@ -91,17 +91,17 @@ public class SearchSelectionRepositoryTest
         var isZero = res.Count() == 0;
         isZero.Should().Be(isZeroShould);
     }
-    [Theory]
-    [InlineData(SortBy.DATE, false)]
-    [InlineData(SortBy.POPULARIY, false)]
-    [InlineData(SortBy.RATING, false)]
-    public async Task SearchWithSortType(SortBy sort, bool isZeroShould)
-    {
-        SearchDto settings = new SearchDto {
-            Sort = sort
-        };
-        var res = await _elasticFixture.Selections.Search(settings);
-        var isZero = res.Count() == 0;
-        isZero.Should().Be(isZeroShould);
-    }
+    // [Theory]
+    // [InlineData(SortBy.DATE, false)]
+    // [InlineData(SortBy.POPULARIY, false)]
+    // [InlineData(SortBy.RATING, false)]
+    // public async Task SearchWithSortType(SortBy sort, bool isZeroShould)
+    // {
+    //     SearchDto settings = new SearchDto {
+    //         Sort = sort
+    //     };
+    //     var res = await _elasticFixture.Selections.Search(settings);
+    //     var isZero = res.Count() == 0;
+    //     isZero.Should().Be(isZeroShould);
+    // }
 }

@@ -1,10 +1,13 @@
-using System.Linq.Expressions;
+
 using Core.Repositories;
-using Core.Dtos;
 using Nest;
+using Core;
+using static Infrastructure.Repositories.FilmFieldHelpers;
+using Core.Dtos;
+
 namespace Infrastructure.Repositories;
 
-public class ReadFilmRepositoryImpl : RepositoryBase, FilmRepository<ShortFilmDto>, GetManyRepository<FilmTrailer>
+public class ReadFilmRepositoryImpl<TFilmType> : RepositoryBase, FilmRepository<TFilmType>, GetManyRepository<TFilmType> where  TFilmType : class, Idable
 {
     
     public ReadFilmRepositoryImpl(IElasticClient elasticClient) : base(elasticClient,"films")
@@ -14,7 +17,7 @@ public class ReadFilmRepositoryImpl : RepositoryBase, FilmRepository<ShortFilmDt
     public async Task<IEnumerable<string>> GetGenres()
     {
         const string AGG_NAME = "genres";
-        var res = await _elasticClient.SearchAsync<FilmDto>(s => s
+        var res = await _elasticClient.SearchAsync<FilmSearchModel>(s => s
             .Index(index)
             .Aggregations(a => a
                 .Terms(
@@ -28,27 +31,22 @@ public class ReadFilmRepositoryImpl : RepositoryBase, FilmRepository<ShortFilmDt
         var genres = res.Aggregations.Terms(AGG_NAME).Buckets.Select(b => b.Key) ?? Enumerable.Empty<string>();
         return genres;
     }
-    public async Task <IEnumerable<FilmTrailer>> GetMany()
+    public async Task <IEnumerable<TFilmType>> GetSreeningFilms()
     {
-        Expression<Func<FilmDto, FilmReleaseType>> fieldExpr = f => f.ReleaseType;
-        Expression<Func<FilmDto, uint>> fieldPremieraExpr = f => f.ViewCount;
-        Field releaseTypeField = fieldExpr;
-        Field premieraViewsField = fieldPremieraExpr;
 
-
-        var trailers = await _elasticClient.SearchAsync<FilmTrailer>(s => s
+        var trailers = await _elasticClient.SearchAsync<TFilmType>(s => s
             .Index(index)
-            .Sort(s => s.Descending(premieraViewsField))
+            .Sort(s => s.Descending(ViewCountField()))
             .Query(q => q
                 .Bool(b => b
                     .Must(m => m
-                        .Terms(ts => ts.Field(releaseTypeField).Terms(FilmReleaseType.SCREENING))
+                        .Terms(ts => ts.Field(ReleaseTypeField()).Terms<FilmReleaseType>(FilmReleaseType.SCREENING))
                     )
                 )
             )
         );
         return trailers.Hits.Count < 0 
-        ? Enumerable.Empty<FilmTrailer>()
+        ? Enumerable.Empty<TFilmType>()
         : trailers.Hits.Select(s => {
             var source = s.Source;
             source.Id = s.Id;

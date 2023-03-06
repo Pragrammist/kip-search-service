@@ -17,7 +17,7 @@ public class ReadFilmRepository
     [Fact]
     public async Task GetMany()
     {
-        var res = await _elasticFixture.GetManyRepo.GetMany();
+        var res = await _elasticFixture.GetManyRepo.GetSreeningFilms();
         var isZero = res.Count() == 0;
         isZero.Should().Be(false);
     }

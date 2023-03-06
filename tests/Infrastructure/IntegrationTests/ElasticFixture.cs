@@ -38,12 +38,12 @@ public class ElasticFixture : IDisposable
         _elkClient = new ElasticClient(settings);
         _elkDataFiller= new DataFiller(_elkClient);
         _elkDataFiller.FillFilmsData();
-        Censors = new SearchCensorRepositoryImpl(_elkClient);
+        Censors = new SearchCensorRepositoryImpl<CensorDto>(_elkClient);
         Films = new SearchFilmRepositoryImpl<ShortFilmDto>(_elkClient);
-        Persons = new SearchPersonRepositoryImpl(_elkClient);
-        Selections = new SelectionRepositoryImpl(_elkClient);
-        FilmRepo = new ReadFilmRepositoryImpl(_elkClient);
-        GetManyRepo = new ReadFilmRepositoryImpl(_elkClient);
+        Persons = new SearchPersonRepositoryImpl<PersonDto>(_elkClient);
+        Selections = new SelectionRepositoryImpl<FilmSelectionDto>(_elkClient);
+        FilmRepo = new ReadFilmRepositoryImpl<ShortFilmDto>(_elkClient);
+        GetManyRepo = new ReadFilmRepositoryImpl<FilmTrailer>(_elkClient);
         ByIdFilmRepository = new ReadByIdRepoGeneric<ShortFilmDto>(_elkClient, "films");
     }
 

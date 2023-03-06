@@ -5,19 +5,22 @@ using Core.Dtos;
 using Core.Dtos.Search;
 using Mapster;
 using Elasticsearch;
+using static Infrastructure.Repositories.SelectionFieldHelpers;
+using static Infrastructure.Repositories.PersonFieldHelpers;
+using static Infrastructure.Repositories.FilmFieldHelpers;
 
 namespace Infrastructure.Repositories;
-public class SelectionRepositoryImpl : RepositoryBase, SearchRepository<FilmSelectionDto>
+public class SelectionRepositoryImpl<TSelectionType> : RepositoryBase, SearchRepository<TSelectionType> where TSelectionType : class, Idable
 {
     
-    public SelectionRepositoryImpl(IElasticClient elasticClient) : base(elasticClient, "censors")
+    public SelectionRepositoryImpl(IElasticClient elasticClient) : base(elasticClient, "selections")
     {
 
     }
-    public async Task<IEnumerable<FilmSelectionDto>> Search(SearchDto settings)
+    public async Task<IEnumerable<TSelectionType>> Search(SearchDto settings)
     {
         var shouldDesc = await ShouldDesc(settings);
-        var res = await _elasticClient.SearchAsync<FilmSelectionDto>(s => s
+        var res = await _elasticClient.SearchAsync<TSelectionType>(s => s
             .Index(index)
             .Take((int)settings.Take)
             .Skip((int)(settings.Take * (settings.Page - 1)))
@@ -29,7 +32,7 @@ public class SelectionRepositoryImpl : RepositoryBase, SearchRepository<FilmSele
             )
         );
         if(res.Hits.Count == 0)
-            return Enumerable.Empty<FilmSelectionDto>();
+            return Enumerable.Empty<TSelectionType>();
         
 
         var toSort = res.Hits.Select(s => {
@@ -38,53 +41,16 @@ public class SelectionRepositoryImpl : RepositoryBase, SearchRepository<FilmSele
             return source;
         });
 
-        return await SortSelections(settings, toSort);
+        return toSort;
     }
-    async Task<IEnumerable<FilmSelectionDto>> SortSelections(SearchDto settings, IEnumerable<FilmSelectionDto> toSearch)
+    
+    async Task <IEnumerable<Func<QueryContainerDescriptor<TSelectionType>, QueryContainer>>> ShouldDesc(SearchDto settings)
     {
-        if(settings.Sort is null || settings.Sort is SortBy.DATE)
-            return toSearch;
-
-        
-        if(settings.Sort == SortBy.POPULARIY){
-            return await toSearch.ToAsyncEnumerable().OrderByDescendingAwait(async c => 
-            {
-                var films = await SelectionsFilms(c);
-                var avgWatched = films.Average(a => a.WatchedCount);
-                return avgWatched;
-            }
-            ).ToListAsync();
-        }
-        else
-            return await toSearch.ToAsyncEnumerable().OrderByDescendingAwait(async c => 
-            {
-                var films = await SelectionsFilms(c);
-                var avgScore = films.Average(a => (a.Score * a.ScoreCount + 1) / (++a.ScoreCount));
-                return avgScore;
-            }
-            ).ToListAsync();
-    }
-    async Task<IEnumerable<FilmDto>> SelectionsFilms(FilmSelectionDto censor)
-    {
-        var films = await _elasticClient.SearchAsync<FilmDto>(s => s
-                .Index("films")
-                .Query(q => q
-                    .Ids(s => s
-                        .Values(censor.Films)
-                )
-            )
-        );
-        return films.Hits.Count == 0 
-            ? Enumerable.Empty<FilmDto>() 
-            : films.Hits.Select(s => s.Source);
-    }
-    async Task <IEnumerable<Func<QueryContainerDescriptor<FilmSelectionDto>, QueryContainer>>> ShouldDesc(SearchDto settings)
-    {
-        var qResult = new List<Func<QueryContainerDescriptor<FilmSelectionDto>, QueryContainer>>();
+        var qResult = new List<Func<QueryContainerDescriptor<TSelectionType>, QueryContainer>>();
         if(settings.Query is not null)
             qResult.Add(q => q
                 .Match(m => m
-                    .Field(f => f.Name)
+                    .Field(SelectionNameField())
                         .Query(settings.Query)
                 )
             );
@@ -93,7 +59,7 @@ public class SelectionRepositoryImpl : RepositoryBase, SearchRepository<FilmSele
 
         if(films.Count() > 0)
             qResult.Add(q => q
-                .Terms(t => t.Terms(films).Field(f => f.Films))
+                .Terms(t => t.Terms(films).Field(SelectionFilmsField()))
             );
 
 
@@ -101,17 +67,17 @@ public class SelectionRepositoryImpl : RepositoryBase, SearchRepository<FilmSele
 
         if(filmsFromPersons.Count() > 0)
             qResult.Add(q => q
-                .Terms(t => t.Terms(filmsFromPersons).Field(f => f.Films))
+                .Terms(t => t.Terms(filmsFromPersons).Field(SelectionFilmsField()))
             );
         return qResult;
     }
     async Task<IEnumerable<string>> RelatedFilms(SearchDto settings)
     {
-        var res = await _elasticClient.SearchAsync<FilmDto>(s => s
+        var res = await _elasticClient.SearchAsync<FilmSearchModel>(s => s
             .Index("films")
                 .Query(q => q
                     .Bool(b => b
-                        .Must(MustFilmDesc(settings))
+                        .Must(MustFilmDesc<FilmSearchModel>(settings))
                     )
                 )
             );
@@ -121,11 +87,11 @@ public class SelectionRepositoryImpl : RepositoryBase, SearchRepository<FilmSele
     }
     async Task<IEnumerable<string>> RelatedPersonsFilms(SearchDto settings)
     {
-        var res = await _elasticClient.SearchAsync<PersonDto>(s => s
+        var res = await _elasticClient.SearchAsync<PersonSearchModel>(s => s
             .Index("persons")
                 .Query(q => q
                     .Bool(b => b
-                        .Must(MustPersonDesc(settings))
+                        .Must(MustPersonDesc<PersonSearchModel>(settings))
                     )
                 )
             );
@@ -139,29 +105,29 @@ public class SelectionRepositoryImpl : RepositoryBase, SearchRepository<FilmSele
             return arrInList.ToArray();
         }).Distinct();
     }
-    IEnumerable<Func<QueryContainerDescriptor<PersonDto>, QueryContainer>> MustPersonDesc(SearchDto settings)
+    IEnumerable<Func<QueryContainerDescriptor<TPersonModel>, QueryContainer>> MustPersonDesc<TPersonModel>(SearchDto settings) where TPersonModel : class
     {
-        var qResult = new List<Func<QueryContainerDescriptor<PersonDto>, QueryContainer>>();
+        var qResult = new List<Func<QueryContainerDescriptor<TPersonModel>, QueryContainer>>();
         if(settings.Query is not null)
             qResult.Add(q => q
                 .Match(m => m
                     .Query(settings.Query)
-                    .Field(f => f.Name)
+                    .Field(PersonNameField())
                 )
             );
         if(settings.KindOfPerson is not null)
             qResult.Add(q => q
-                .Term(t => t.KindOfPerson, settings.KindOfPerson));
+                .Term(KindOfPersonField(), settings.KindOfPerson));
         return qResult;
     }
-    IEnumerable<Func<QueryContainerDescriptor<FilmDto>, QueryContainer>> MustFilmDesc(SearchDto settings)
+    IEnumerable<Func<QueryContainerDescriptor<TFilmSearchModel>, QueryContainer>> MustFilmDesc<TFilmSearchModel>(SearchDto settings) where TFilmSearchModel : class
     {
-        var qResult = new List<Func<QueryContainerDescriptor<FilmDto>, QueryContainer>>();
+        var qResult = new List<Func<QueryContainerDescriptor<TFilmSearchModel>, QueryContainer>>();
 
         if(settings.Query is not null)
             qResult.Add(q => q
                 .Match(m => m
-                    .Field(f => f.Name)
+                    .Field(FilmNameField())
                         .Query(settings.Query)
                 )
             );
@@ -169,34 +135,34 @@ public class SelectionRepositoryImpl : RepositoryBase, SearchRepository<FilmSele
         if(settings.Genres is not null)
             qResult.Add(q => q
                 .Terms(t => t
-                    .Field(f => f.Genres)
+                    .Field(GenresField())
                         .Terms(settings.Genres)
                 )
             );
         if(settings.Countries is not null)
             qResult.Add(q => q
                 .Bool(b => b
-                    .Should(ShouldCountriesDesc(settings))
+                    .Should(ShouldCountriesDesc<TFilmSearchModel>(settings))
                 )
             );
         if(settings.KindOfFilm is not null)
-            qResult.Add(q => q.Term(t => t.KindOfFilm, settings.KindOfFilm));
+            qResult.Add(q => q.Term(KindOfFilmField(), settings.KindOfFilm));
 
         if(settings.ReleaseType is not null)
-            qResult.Add(q => q.Term(t => t.ReleaseType, settings.ReleaseType));
+            qResult.Add(q => q.Term(ReleaseTypeField(), settings.ReleaseType));
 
         if(settings.AgeLimit is not null)
             qResult.Add(q => q
                 .Range(r => r
-                    .Field(f => f.AgeLimit)
+                    .Field(AgeLimitField())
                     .LessThanOrEquals(settings.AgeLimit)
                 )
             );
         return qResult;
     }
-    IEnumerable<Func<QueryContainerDescriptor<FilmDto>, QueryContainer>> ShouldCountriesDesc(SearchDto settings)
+    IEnumerable<Func<QueryContainerDescriptor<TFilmSearchModel>, QueryContainer>> ShouldCountriesDesc<TFilmSearchModel>(SearchDto settings) where TFilmSearchModel : class
     {
-        var qResult = new List<Func<QueryContainerDescriptor<FilmDto>, QueryContainer>>();
+        var qResult = new List<Func<QueryContainerDescriptor<TFilmSearchModel>, QueryContainer>>();
         if(settings.Countries is null)
             return qResult;
         foreach(var count in settings.Countries)
@@ -204,7 +170,7 @@ public class SelectionRepositoryImpl : RepositoryBase, SearchRepository<FilmSele
             qResult.Add(q => q
                 .Match(m => m
                     .Query(count)
-                    .Field(f => f.Country)
+                    .Field(FilmCountryField())
                 )
             );
         }

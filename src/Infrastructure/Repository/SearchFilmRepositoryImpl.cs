@@ -1,9 +1,9 @@
-using System.Linq.Expressions;
-using Core.Dtos;
 using Core.Dtos.Search;
 using Nest;
 using Core.Repositories;
 using Core;
+using static Infrastructure.Repositories.FilmFieldHelpers;
+using static Infrastructure.Repositories.PersonFieldHelpers;
 
 namespace Infrastructure.Repositories;
 
@@ -50,14 +50,19 @@ public class SearchFilmRepositoryImpl<TFilmType> : RepositoryBase, SearchReposit
             selector.Descending(WatchedCountField());
         else if (settings.Sort == SortBy.RATING)
             selector.Script(RatingCalculator);
+        else if(settings.Sort == SortBy.RATING)
+            selector.Descending(ReleaseField())
+                    .Descending(StartSreeningField())
+                    .Descending(EndSreeningField());
 
-            return selector;
+        return selector;
     }
     
     IScriptSort RatingCalculator(ScriptSortDescriptor<TFilmType> selector)
     {
+        
         selector.Type("number");
-        selector.Script(s => s.Source($"(doc['{nameof(FilmDto.Score)}'].value * doc['{nameof(FilmDto.ScoreCount)}'].value + 1) / (doc['{nameof(FilmDto.ScoreCount)}'].value+1)")); //(a.Score * a.ScoreCount + 1) / (++a.ScoreCount)
+        selector.Script(s => s.Source($"(doc['{nameof(FilmSearchModel.Score)}'].value * doc['{nameof(FilmSearchModel.ScoreCount)}'].value + 1) / (doc['{nameof(FilmSearchModel.ScoreCount)}'].value+1)")); //(a.Score * a.ScoreCount + 1) / (++a.ScoreCount)
         return selector;
     }
 
@@ -69,38 +74,6 @@ public class SearchFilmRepositoryImpl<TFilmType> : RepositoryBase, SearchReposit
         if(settings.To is null) 
             settings.To = new DateTime(2023, 01, 28, 0, 0, 0); 
     }
-
-
-    // IEnumerable<TFilmType> SortDescriptor(IEnumerable<TFilmType> toSort, SearchDto settings)
-    // {
-        //return toSort;
-        // if(settings.Sort is null || toSort.Count() < 1)
-        //     return toSort;
-
-        // if(settings.Sort == Core.SortBy.POPULARIY)
-        //     return toSort.OrderByDescending(f => f.ViewCount);
-        
-        // if(settings.Sort == Core.SortBy.RATING)
-        //     return toSort.OrderByDescending(a => (a.Score * a.ScoreCount + 1) / (++a.ScoreCount));
-
-        // else
-        //     return toSort.OrderByDescending(f => GiveNotNullFieldOrDefault(f, DateTime.MinValue));
-    //}
-    // DateTime? GiveNotNullFieldOrDefault(FilmDto film, DateTime? defValue = null)
-    // {
-        
-    //     if(film.EndScreening is not null)
-    //         return film.EndScreening;
-        
-    //     if(film.StartScreening is not null)
-    //         return film.StartScreening;
-
-    //     if(film.Release is not null)
-    //         return film.Release;
-        
-    //     return defValue ?? default;
-    // }
-
     
     async Task<IEnumerable<string>> PersonSelector(SearchDto settings)
     {    
@@ -108,11 +81,11 @@ public class SearchFilmRepositoryImpl<TFilmType> : RepositoryBase, SearchReposit
             return Enumerable.Empty<string>();
 
         var maybeRalatedFilmsFromActors = await _elasticClient
-            .SearchAsync<PersonDto>(s => s
+            .SearchAsync<PersonSearchModel>(s => s
                 .Index("persons")
                 .Query(q => q
                     .Bool(b => b
-                        .Must(MustPersonDecriptor(settings))
+                        .Must(MustPersonDecriptor<PersonSearchModel>(settings))
                     )
                 )
             );
@@ -217,7 +190,7 @@ public class SearchFilmRepositoryImpl<TFilmType> : RepositoryBase, SearchReposit
     {
         desc.Bool(b => b.Should(sh => {
             foreach(var country in countries)
-                sh.Match(m => m.Query(country).Field(CountryField()));
+                sh.Match(m => m.Query(country).Field(FilmCountryField()));
                 
             return sh;
         }));
@@ -227,16 +200,16 @@ public class SearchFilmRepositoryImpl<TFilmType> : RepositoryBase, SearchReposit
     }
 
 
-    IEnumerable<Func<QueryContainerDescriptor<PersonDto>, QueryContainer>> MustPersonDecriptor(SearchDto settings)
+    IEnumerable<Func<QueryContainerDescriptor<TPersonSearchModel>, QueryContainer>> MustPersonDecriptor<TPersonSearchModel>(SearchDto settings) where TPersonSearchModel : class
     {
-        var qRes = new List<Func<QueryContainerDescriptor<PersonDto>, QueryContainer>>();
+        var qRes = new List<Func<QueryContainerDescriptor<TPersonSearchModel>, QueryContainer>>();
 
         if(settings.Query is not null)
             qRes.Add(q => q
                 .MultiMatch(m => m
                     .Query(settings.Query)
                     .Fields(p => p
-                        .Fields(f => f.Name, f => f.Career)
+                        .Fields(new List<Field> {PersonNameField(), CareerField()})
                     )
                 )
             );
@@ -245,7 +218,7 @@ public class SearchFilmRepositoryImpl<TFilmType> : RepositoryBase, SearchReposit
             qRes.Add(q => q
                 .Term(m => m
                     .Value(settings.KindOfPerson)
-                    .Field(f => f.KindOfPerson)
+                    .Field(KindOfPersonField())
                 )
             );
         return qRes;
@@ -264,12 +237,12 @@ public class SearchFilmRepositoryImpl<TFilmType> : RepositoryBase, SearchReposit
                 .Query(settings.Query)
                 .MinimumShouldMatch("2<50%")
                 .Fields(fs => fs
-                    .Field(NameField(3))
+                    .Field(FilmNameField(3))
                     .Field(DescriptionField(2))
                 )
             )
         );
-        qResult.Add(q => q.Term(NominationsField(), settings.Query));
+        qResult.Add(q => q.Term(FilmNominationsField(), settings.Query));
 
         var relatedFilmsFromActors = await PersonSelector(settings);
 
@@ -280,101 +253,6 @@ public class SearchFilmRepositoryImpl<TFilmType> : RepositoryBase, SearchReposit
         
         return qResult;
     }
-    Field DescriptionField(double? boost = null)
-    {
-        Expression<Func<FilmDto, string>> fieldExpr = f => f.Description;
-        Field res =  fieldExpr;
-        res.Boost = boost;
-        return res;
-    }
-
-    Field NominationsField(double? boost = null)
-    {
-        Expression<Func<FilmDto, string[]>> fieldExpr = f => f.Nominations;
-        Field res =  fieldExpr;
-        res.Boost = boost;
-        return res;
-    }
-
-    Field CountryField(double? boost = null)
-    {
-        Expression<Func<FilmDto, string>> fieldExpr = f => f.Country;
-        Field res =  fieldExpr;
-        res.Boost = boost;
-        return res;
-    }
-
-    Field KindOfFilmField(double? boost = null)
-    {
-        Expression<Func<FilmDto, FilmType>> fieldExpr = f => f.KindOfFilm;
-        Field res =  fieldExpr;
-        res.Boost = boost;
-        return res;
-    }
-    Field ReleaseTypeField(double? boost = null)
-    {
-        Expression<Func<FilmDto, FilmReleaseType>> fieldExpr = f => f.ReleaseType;
-        Field res =  fieldExpr;
-        res.Boost = boost;
-        return res;
-    }
-
-    Field ReleaseField(double? boost = null)
-    {
-        Expression<Func<FilmDto, DateTime?>> fieldExpr = f => f.Release;
-        Field res =  fieldExpr;
-        res.Boost = boost;
-        return res;
-    }
-    Field StartSreeningField(double? boost = null)
-    {
-        Expression<Func<FilmDto, DateTime?>> fieldExpr = f => f.StartScreening;
-        Field res =  fieldExpr;
-        res.Boost = boost;
-        return res;
-    }
-    Field EndSreeningField(double? boost = null)
-    {
-        Expression<Func<FilmDto, DateTime?>> fieldExpr = f => f.StartScreening;
-        Field res =  fieldExpr;
-        res.Boost = boost;
-        return res;
-    }
-    Field AgeLimitField(double? boost = null)
-    {
-        Expression<Func<FilmDto, uint>> fieldExpr = f => f.AgeLimit;
-        Field res =  fieldExpr;
-        res.Boost = boost;
-        return res;
-    }
-    Field GenresField(double? boost = null)
-    {
-        Expression<Func<FilmDto, string[]>> fieldExpr = f => f.Genres;
-        Field res =  fieldExpr;
-        res.Boost = boost;
-        return res;
-    }
-    Field NameField(double? boost = null)
-    {
-        Expression<Func<FilmDto, string>> fieldExpr = f => f.Name;
-        Field res =  fieldExpr;
-        res.Boost = boost;
-        return res;
-    }
-    Field WatchedCountField(double? boost = null)
-    {
-        Expression<Func<FilmDto, uint>> fieldExpr = f => f.WatchedCount;
-        Field res =  fieldExpr;
-        res.Boost = boost;
-        return res;
-    }
-    Field ScoreField(double? boost = null)
-    {
-        Expression<Func<FilmDto, double>> fieldExpr = f => f.Score;
-        Field res =  fieldExpr;
-        res.Boost = boost;
-        return res;
-    }
-
+    
 }
 

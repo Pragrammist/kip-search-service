@@ -1,22 +1,24 @@
 using Core;
 using Core.Repositories;
-using Core.Dtos;
+using static Infrastructure.Repositories.FilmFieldHelpers;
+using static Infrastructure.Repositories.PersonFieldHelpers;
+using static Infrastructure.Repositories.CensorFieldHelpers;
 using Core.Dtos.Search;
 using Nest;
 
 namespace Infrastructure.Repositories;
 
-public class SearchCensorRepositoryImpl : RepositoryBase, SearchRepository<CensorDto>
+public class SearchCensorRepositoryImpl<TCensorType> : RepositoryBase, SearchRepository<TCensorType> where TCensorType : class, Idable
 {
     
     public SearchCensorRepositoryImpl(IElasticClient elasticClient) : base(elasticClient, "censors") 
     {
         
     }
-    public async Task<IEnumerable<CensorDto>> Search(SearchDto settings)
+    public async Task<IEnumerable<TCensorType>> Search(SearchDto settings)
     {
         var shouldDesc = await ShouldDesc(settings);
-        var res = await _elasticClient.SearchAsync<CensorDto>(s => s
+        var res = await _elasticClient.SearchAsync<TCensorType>(s => s
             .Index(index)
             .Take((int)settings.Take)
             .Skip((int)(settings.Take * (settings.Page - 1)))
@@ -28,7 +30,7 @@ public class SearchCensorRepositoryImpl : RepositoryBase, SearchRepository<Censo
             )
         );
         if(res.Hits.Count == 0)
-            return Enumerable.Empty<CensorDto>();
+            return Enumerable.Empty<TCensorType>();
         
 
         var toSort = res.Hits.Select(s => {
@@ -37,53 +39,16 @@ public class SearchCensorRepositoryImpl : RepositoryBase, SearchRepository<Censo
             return source;
         });
 
-        return await SortCensors(settings, toSort);
+        return toSort;
     }
-    async Task<IEnumerable<CensorDto>> SortCensors(SearchDto settings, IEnumerable<CensorDto> toSearch)
+    
+    async Task <IEnumerable<Func<QueryContainerDescriptor<TCensorType>, QueryContainer>>> ShouldDesc(SearchDto settings)
     {
-        if(settings.Sort is null || settings.Sort is SortBy.DATE)
-            return toSearch;
-
-        
-        if(settings.Sort == SortBy.POPULARIY){
-            return await toSearch.ToAsyncEnumerable().OrderByDescendingAwait(async c => 
-            {
-                var films = await CensorFilms(c);
-                var avgWatched = films.Average(a => a.WatchedCount);
-                return avgWatched;
-            }
-            ).ToListAsync();
-        }
-        else
-            return await toSearch.ToAsyncEnumerable().OrderByDescendingAwait(async c => 
-            {
-                var films = await CensorFilms(c);
-                var avgScore = films.Average(a => (a.Score * a.ScoreCount + 1) / (++a.ScoreCount));
-                return avgScore;
-            }
-            ).ToListAsync();
-    }
-    async Task<IEnumerable<FilmDto>> CensorFilms(CensorDto censor)
-    {
-        var films = await _elasticClient.SearchAsync<FilmDto>(s => s
-                .Index("films")
-                .Query(q => q
-                    .Ids(s => s
-                        .Values(censor.Films)
-                )
-            )
-        );
-        return films.Hits.Count == 0 
-            ? Enumerable.Empty<FilmDto>() 
-            : films.Hits.Select(s => s.Source);
-    }
-    async Task <IEnumerable<Func<QueryContainerDescriptor<CensorDto>, QueryContainer>>> ShouldDesc(SearchDto settings)
-    {
-        var qResult = new List<Func<QueryContainerDescriptor<CensorDto>, QueryContainer>>();
+        var qResult = new List<Func<QueryContainerDescriptor<TCensorType>, QueryContainer>>();
         if(settings.Query is not null)
             qResult.Add(q => q
                 .Match(m => m
-                    .Field(f => f.Name)
+                    .Field(CensorNameField())
                         .Query(settings.Query)
                 )
             );
@@ -92,7 +57,7 @@ public class SearchCensorRepositoryImpl : RepositoryBase, SearchRepository<Censo
 
         if(films.Count() > 0)
             qResult.Add(q => q
-                .Terms(t => t.Terms(films).Field(f => f.Films))
+                .Terms(t => t.Terms(films).Field(CensorFilmsField()))
             );
 
 
@@ -100,17 +65,18 @@ public class SearchCensorRepositoryImpl : RepositoryBase, SearchRepository<Censo
 
         if(filmsFromPersons.Count() > 0)
             qResult.Add(q => q
-                .Terms(t => t.Terms(filmsFromPersons).Field(f => f.Films))
+                .Terms(t => t.Terms(filmsFromPersons).Field(CensorFilmsField()))
             );
         return qResult;
     }
+    
     async Task<IEnumerable<string>> RelatedFilms(SearchDto settings)
     {
-        var res = await _elasticClient.SearchAsync<FilmDto>(s => s
+        var res = await _elasticClient.SearchAsync<FilmSearchModel>(s => s
             .Index("films")
                 .Query(q => q
                     .Bool(b => b
-                        .Must(MustFilmDesc(settings))
+                        .Must(MustFilmDesc<FilmSearchModel>(settings))
                     )
                 )
             );
@@ -118,13 +84,14 @@ public class SearchCensorRepositoryImpl : RepositoryBase, SearchRepository<Censo
         ? Enumerable.Empty<string>()
         : res.Hits.Select(h => h.Id);
     }
+    
     async Task<IEnumerable<string>> RelatedPersonsFilms(SearchDto settings)
     {
-        var res = await _elasticClient.SearchAsync<PersonDto>(s => s
+        var res = await _elasticClient.SearchAsync<PersonSearchModel>(s => s
             .Index("persons")
                 .Query(q => q
                     .Bool(b => b
-                        .Must(MustPersonDesc(settings))
+                        .Must(MustPersonDesc<PersonSearchModel>(settings))
                     )
                 )
             );
@@ -138,29 +105,31 @@ public class SearchCensorRepositoryImpl : RepositoryBase, SearchRepository<Censo
             return arrInList.ToArray();
         }).Distinct();
     }
-    IEnumerable<Func<QueryContainerDescriptor<PersonDto>, QueryContainer>> MustPersonDesc(SearchDto settings)
+    
+    IEnumerable<Func<QueryContainerDescriptor<TPersonSearchModel>, QueryContainer>> MustPersonDesc<TPersonSearchModel>(SearchDto settings) where TPersonSearchModel : class
     {
-        var qResult = new List<Func<QueryContainerDescriptor<PersonDto>, QueryContainer>>();
+        var qResult = new List<Func<QueryContainerDescriptor<TPersonSearchModel>, QueryContainer>>();
         if(settings.Query is not null)
             qResult.Add(q => q
                 .Match(m => m
                     .Query(settings.Query)
-                    .Field(f => f.Name)
+                    .Field(PersonNameField())
                 )
             );
         if(settings.KindOfPerson is not null)
             qResult.Add(q => q
-                .Term(t => t.KindOfPerson, settings.KindOfPerson));
+                .Term(KindOfPersonField(), settings.KindOfPerson));
         return qResult;
     }
-    IEnumerable<Func<QueryContainerDescriptor<FilmDto>, QueryContainer>> MustFilmDesc(SearchDto settings)
+    
+    IEnumerable<Func<QueryContainerDescriptor<TFilmSearchModel>, QueryContainer>> MustFilmDesc<TFilmSearchModel>(SearchDto settings) where TFilmSearchModel : class
     {
-        var qResult = new List<Func<QueryContainerDescriptor<FilmDto>, QueryContainer>>();
+        var qResult = new List<Func<QueryContainerDescriptor<TFilmSearchModel>, QueryContainer>>();
 
         if(settings.Query is not null)
             qResult.Add(q => q
                 .Match(m => m
-                    .Field(f => f.Name)
+                    .Field(FilmNameField())
                         .Query(settings.Query)
                 )
             );
@@ -168,34 +137,35 @@ public class SearchCensorRepositoryImpl : RepositoryBase, SearchRepository<Censo
         if(settings.Genres is not null)
             qResult.Add(q => q
                 .Terms(t => t
-                    .Field(f => f.Genres)
+                    .Field(GenresField())
                         .Terms(settings.Genres)
                 )
             );
         if(settings.Countries is not null)
             qResult.Add(q => q
                 .Bool(b => b
-                    .Should(ShouldCountriesDesc(settings))
+                    .Should(ShouldCountriesDesc<TFilmSearchModel>(settings))
                 )
             );
         if(settings.KindOfFilm is not null)
-            qResult.Add(q => q.Term(t => t.KindOfFilm, settings.KindOfFilm));
+            qResult.Add(q => q.Term(KindOfFilmField(), settings.KindOfFilm));
 
         if(settings.ReleaseType is not null)
-            qResult.Add(q => q.Term(t => t.ReleaseType, settings.ReleaseType));
+            qResult.Add(q => q.Term(ReleaseTypeField(), settings.ReleaseType));
 
         if(settings.AgeLimit is not null)
             qResult.Add(q => q
                 .Range(r => r
-                    .Field(f => f.AgeLimit)
+                    .Field(AgeLimitField())
                     .LessThanOrEquals(settings.AgeLimit)
                 )
             );
         return qResult;
     }
-    IEnumerable<Func<QueryContainerDescriptor<FilmDto>, QueryContainer>> ShouldCountriesDesc(SearchDto settings)
+    
+    IEnumerable<Func<QueryContainerDescriptor<TFilmSearchModel>, QueryContainer>> ShouldCountriesDesc<TFilmSearchModel>(SearchDto settings) where TFilmSearchModel: class
     {
-        var qResult = new List<Func<QueryContainerDescriptor<FilmDto>, QueryContainer>>();
+        var qResult = new List<Func<QueryContainerDescriptor<TFilmSearchModel>, QueryContainer>>();
         if(settings.Countries is null)
             return qResult;
         foreach(var count in settings.Countries)
@@ -203,7 +173,7 @@ public class SearchCensorRepositoryImpl : RepositoryBase, SearchRepository<Censo
             qResult.Add(q => q
                 .Match(m => m
                     .Query(count)
-                    .Field(f => f.Country)
+                    .Field(FilmCountryField())
                 )
             );
         }

@@ -12,10 +12,10 @@ public static class AppServicesConfiguration
 {
     public static IServiceCollection AddSearchers(this IServiceCollection services)
     {
-        services.AddTransient<SearchRepository<CensorDto>, SearchCensorRepositoryImpl>();
+        services.AddTransient<SearchRepository<CensorDto>, SearchCensorRepositoryImpl<CensorDto>>();
         services.AddTransient<SearchRepository<ShortFilmDto>, SearchFilmRepositoryImpl<ShortFilmDto>>();
-        services.AddTransient<SearchRepository<PersonDto>, SearchPersonRepositoryImpl>();
-        services.AddTransient<SearchRepository<FilmSelectionDto>, SelectionRepositoryImpl>();
+        services.AddTransient<SearchRepository<PersonDto>, SearchPersonRepositoryImpl<PersonDto>>();
+        services.AddTransient<SearchRepository<FilmSelectionDto>, SelectionRepositoryImpl<FilmSelectionDto>>();
         services.AddTransient<ByIdRepository<ShortFilmDto>, ReadByIdRepoGeneric<ShortFilmDto>>(services => {
             var elastic = services.GetRequiredService<IElasticClient>();
             return new ReadByIdRepoGeneric<ShortFilmDto>(elastic, "films");
@@ -37,8 +37,8 @@ public static class AppServicesConfiguration
             return new ReadByIdRepoGeneric<FilmSelectionDto>(elastic, "selections");
         });
         services.AddTransient<SearchRepository<FilmTrailer>, SearchFilmRepositoryImpl<FilmTrailer>>();
-        services.AddTransient<FilmRepository<ShortFilmDto>, ReadFilmRepositoryImpl>();
-        services.AddTransient<GetManyRepository<FilmTrailer>, ReadFilmRepositoryImpl>();
+        services.AddTransient<FilmRepository<ShortFilmDto>, ReadFilmRepositoryImpl<ShortFilmDto>>();
+        services.AddTransient<GetManyRepository<FilmTrailer>, ReadFilmRepositoryImpl<FilmTrailer>>();
         services.AddTransient<SearchInteractor>();
         return services;
     }

@@ -34,7 +34,7 @@ public class SearchInteractor
                 selections: await _selections.Search(settings)
             ).ToListAsync(),
             Genres = await _filmRepo.GetGenres(),
-            Trailers = await _trailersRepo.GetMany()
+            Trailers = await _trailersRepo.GetSreeningFilms()
         };
     }
     async IAsyncEnumerable<FilmSelectionDto> FillFilmObjects(IEnumerable<FilmSelectionDto> selections)

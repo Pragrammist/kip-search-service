@@ -7,5 +7,5 @@ public interface ByIdRepository<SearchType>
 
 public interface GetManyRepository<SearchType>
 {
-    public Task <IEnumerable<SearchType>> GetMany();
+    public Task <IEnumerable<SearchType>> GetSreeningFilms();
 }
