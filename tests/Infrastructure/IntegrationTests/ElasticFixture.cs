@@ -6,6 +6,7 @@ using Core.Dtos;
 
 using System;
 using System.Collections.Generic;
+using Infrastructure.Configuration;
 
 namespace IntegrationTests;
 

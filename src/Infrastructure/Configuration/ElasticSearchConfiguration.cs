@@ -1,5 +1,4 @@
 using Elasticsearch.Net;
-using Infrastructure.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using Nest;
 using Serilog;
@@ -41,34 +40,14 @@ public static class ElasticSearchConfiguration
                 settings.EnableApiVersioningHeader();
 
                 settings.DefaultFieldNameInferrer(p => p);
-                return new ElasticClient(settings);
+                var client = new ElasticClient(settings);
+                var indexFiller = new IndexFiller(client);
+                indexFiller.FillIndexes();
+                return client;
             });
          
         return services;
     }
 
-}
-
-public class IndexFiller
-{
-    readonly IElasticClient _elasticClient;
-    public IndexFiller(IElasticClient elasticClient)
-    {
-        _elasticClient = elasticClient;
-    }
-
-    public void FillIndexes(string filmIndex = "films")
-    {
-        
-    }
-    void FilmIndex(string filmIndex = "films")
-    {
-        _elasticClient.Map<FilmSearchModel>( m => m
-            .Index(filmIndex)
-            .Properties(p => p
-                .IntegerRange(f => f.Name(n => n.AgeLimit))
-            )
-        );
-    }
 }
 
