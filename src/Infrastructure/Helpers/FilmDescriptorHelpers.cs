@@ -5,12 +5,6 @@ using static Infrastructure.Repositories.DescriptorHelpers;
 
 namespace Infrastructure.Repositories;
 
-public static class DescriptorHelpers
-{
-    public static List<Func<QueryContainerDescriptor<Model>, QueryContainer>> QueryContainerList<Model>() where Model : class
-         => new List<Func<QueryContainerDescriptor<Model>, QueryContainer>>();
-}
-
 public static class FilmDescriptorHelpers
 {
     public static List<Func<QueryContainerDescriptor<TFilmSearchModel>, QueryContainer>> GenresFilter<TFilmSearchModel>(this List<Func<QueryContainerDescriptor<TFilmSearchModel>, QueryContainer>> filmDesc, SearchDto settings) where TFilmSearchModel: class
@@ -106,14 +100,54 @@ public static class FilmDescriptorHelpers
         return filmDesc;
     }          
 
-    public static List<Func<QueryContainerDescriptor<TFilmSearchModel>, QueryContainer>> AddShouldDesc<TFilmSearchModel>(this List<Func<QueryContainerDescriptor<TFilmSearchModel>, QueryContainer>> filmDesc, IEnumerable<Func<QueryContainerDescriptor<TFilmSearchModel>, QueryContainer>> shouldDescr) where TFilmSearchModel: class
+    public static List<Func<QueryContainerDescriptor<TFilmSearchModel>, QueryContainer>> FilmNominationFilter<TFilmSearchModel>(this List<Func<QueryContainerDescriptor<TFilmSearchModel>, QueryContainer>> filmDesc, SearchDto settings, string minShouldMatch = "0") where TFilmSearchModel: class
     {
-        filmDesc.Add(q => q.Bool(b => b.Should(shouldDescr)));
+        if(settings.Query is not null)
+            filmDesc.Add(q => q.Term(FilmNominationsField(), settings.Query));
         return filmDesc;
     }          
+   
+    public static List<Func<QueryContainerDescriptor<TFilmSearchModel>, QueryContainer>> FilmDateFilter<TFilmSearchModel>(this List<Func<QueryContainerDescriptor<TFilmSearchModel>, QueryContainer>> filmDesc, SearchDto settings) where TFilmSearchModel : class
+    {
+        SetDefaultDateTimeRange(settings);
+        filmDesc.Add(f => DateTimeFilter(f, settings));
+        return filmDesc;
+    }
+    
+    static void SetDefaultDateTimeRange(SearchDto settings)
+    {
+        if(settings.From is null)
+            settings.From = new DateTime(1887, 1, 1, 0, 0, 0);
+        if(settings.To is null) 
+            settings.To = DateTime.Now; 
+    }
+    static QueryContainer DateTimeFilter<TFilmSearchModel>(QueryContainerDescriptor<TFilmSearchModel> f, SearchDto settings) where TFilmSearchModel : class
+        => f.Bool(b2 => b2
+            .Should(
+                sh => sh
+                    .DateRange(d => d
+                        .Field(ReleaseField())
+                        .GreaterThan(settings.From)
+                        .LessThan(settings.To)
+                    ),
+                sh => sh
+                    .DateRange(d => d
+                        .Field(EndSreeningField())
+                        .GreaterThan(settings.From)
+                        .LessThan(settings.To)
+                        
+                    ),
+                sh => sh
+                    .DateRange(d => d
+                        .Field(StartSreeningField())
+                        .GreaterThan(settings.From)                    
+                        .LessThan(settings.To)
+                    )
+                )
+            .MinimumShouldMatch(1)
+            );
 
-
-    public static async Task<IEnumerable<string>> SearchRelatedFilms(
+    static async Task<IEnumerable<string>> SearchRelatedFilms(
         this IElasticClient elasticClient,
         SearchDto settings, 
         Func<SearchDto, IEnumerable<Func<QueryContainerDescriptor<FilmSearchModel>, QueryContainer>>> mustFilmDesc

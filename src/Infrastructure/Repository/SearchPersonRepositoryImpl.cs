@@ -5,6 +5,7 @@ using Nest;
 using Core.Repositories;
 using static Infrastructure.Repositories.PersonFieldHelpers;
 using static Infrastructure.Repositories.FilmFieldHelpers;
+using static Infrastructure.Repositories.DescriptorHelpers;
 
 
 namespace Infrastructure.Repositories;
@@ -40,53 +41,22 @@ public class SearchPersonRepositoryImpl<TPerson> : RepositoryBase, SearchReposit
         if(settings.Sort == SortBy.DATE)
             selector.Descending(BirdayField());
 
-        // if(settings.Sort == SortBy.POPULARIY)
-        //     selector.Descending(WatchedCountField());
-        // else if (settings.Sort == SortBy.RATING)
-        //     selector.Script(RatingCalculator);
-
-            return selector;
+        return selector;
     }
     
-    async Task<IEnumerable<Func<QueryContainerDescriptor<TPerson>, QueryContainer>>> MustDescriptor(SearchDto settings)
-    {
-        var qResult = new List<Func<QueryContainerDescriptor<TPerson>, QueryContainer>>();
-        var shouldDescr = await ShouldDescriptorInMust(settings);
-
-        qResult.Add(m => m
-                    .Bool(b => b.Should(shouldDescr))
-                );
-        
-        if(settings.KindOfPerson is not null)
-            qResult.KindOfPersonFilter(settings);
-
-        if(settings.From is not null)
-            qResult.Add(s => s.DateRange(d => d.Field(BirdayField()).GreaterThanOrEquals(settings.From)));
-        
-        if(settings.To is not null)
-            qResult.Add(s => s.DateRange(d => d.Field(BirdayField()).LessThanOrEquals(settings.To)));
-        return qResult;
-    }
+    async Task<IEnumerable<Func<QueryContainerDescriptor<TPerson>, QueryContainer>>> MustDescriptor(SearchDto settings) => 
+    QueryContainerList<TPerson>()
+    .AddShouldDesc(await ShouldDescriptorInMust(settings))
+    .KindOfPersonFilter(settings)
+    .BirdayFromFilter(settings)
+    .BirdayToFilter(settings);
     
-    async Task <IEnumerable<Func<QueryContainerDescriptor<TPerson>, QueryContainer>>> ShouldDescriptorInMust(SearchDto settings)
-    {
-        var qResult = new List<Func<QueryContainerDescriptor<TPerson>, QueryContainer>>();
-
-        if(settings.Query is not null)
-            qResult.PersonQueryWithNominationFilter(settings);
-        
-        var filmIds = await _elasticClient.SearchRelatedFilmsForPerson(settings);
-
-
-        if(filmIds.Count() > 0)
-            qResult.Add(s => s.Terms(t => t
-                .Terms(filmIds)
-                .Field(PersonFilmsField())
-            )
-        );
-
-        return qResult;
-    }
+    
+    async Task <IEnumerable<Func<QueryContainerDescriptor<TPerson>, QueryContainer>>> ShouldDescriptorInMust(SearchDto settings) =>
+        QueryContainerList<TPerson>()
+        .PersonQueryWithNominationFilter(settings)
+        .ValuesFilter(PersonFilmsField(), await _elasticClient.SearchRelatedFilmsForPerson(settings));
+   
     
     
 }

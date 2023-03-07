@@ -1,8 +1,8 @@
 using Core;
 using Core.Repositories;
-using static Infrastructure.Repositories.FilmFieldHelpers;
-using static Infrastructure.Repositories.PersonFieldHelpers;
+using static Infrastructure.Repositories.DescriptorHelpers;
 using static Infrastructure.Repositories.CensorFieldHelpers;
+
 using Core.Dtos.Search;
 using Nest;
 
@@ -33,33 +33,12 @@ public class SearchCensorRepositoryImpl<TCensorType> : RepositoryBase, SearchRep
         return res.SelectHitsWithId();
     }
     
-    async Task <IEnumerable<Func<QueryContainerDescriptor<TCensorType>, QueryContainer>>> ShouldDesc(SearchDto settings)
-    {
-        var qResult = new List<Func<QueryContainerDescriptor<TCensorType>, QueryContainer>>();
-        if(settings.Query is not null)
-            qResult.Add(q => q
-                .Match(m => m
-                    .Field(CensorNameField())
-                        .Query(settings.Query)
-                )
-            );
-        
-        var films = await _elasticClient.SearchRelatedFilms(settings);
-
-        if(films.Count() > 0)
-            qResult.Add(q => q
-                .Terms(t => t.Terms(films).Field(CensorFilmsField()))
-            );
-
-
-        var filmsFromPersons = await _elasticClient.RelatedPersons(settings);
-
-        if(filmsFromPersons.Count() > 0)
-            qResult.Add(q => q
-                .Terms(t => t.Terms(filmsFromPersons).Field(CensorFilmsField()))
-            );
-        return qResult;
-    }
+    async Task <IEnumerable<Func<QueryContainerDescriptor<TCensorType>, QueryContainer>>> ShouldDesc(SearchDto settings) =>
+        QueryContainerList<TCensorType>()
+        .CensorNameQuery(settings)
+        .ValuesFilter(CensorFilmsField(), await _elasticClient.SearchRelatedFilms(settings))
+        .ValuesFilter(CensorFilmsField(), await _elasticClient.FilmFromPersons(settings));
+    
     
     
 

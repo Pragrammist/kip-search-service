@@ -17,7 +17,6 @@ public class SearchFilmRepositoryImpl<TFilmType> : RepositoryBase, SearchReposit
 
     public async Task<IEnumerable<TFilmType>> Search(SearchDto settings)
     {
-        SetDefaultDateTimeRange(settings);
         var mustDesc = await MustDescriptor(settings);
         var res = await _elasticClient.SearchAsync<TFilmType>(s => s
             .Index(index)
@@ -44,10 +43,7 @@ public class SearchFilmRepositoryImpl<TFilmType> : RepositoryBase, SearchReposit
             selector.Descending(WatchedCountField());
         else if (settings.Sort == SortBy.RATING)
             selector.Script(RatingCalculator);
-        else if(settings.Sort == SortBy.RATING)
-            selector.Descending(ReleaseField())
-                    .Descending(StartSreeningField())
-                    .Descending(EndSreeningField());
+
 
         return selector;
     }
@@ -60,55 +56,14 @@ public class SearchFilmRepositoryImpl<TFilmType> : RepositoryBase, SearchReposit
     }
 
 
-    void SetDefaultDateTimeRange(SearchDto settings)
-    {
-        if(settings.From is null)
-            settings.From = new DateTime(1887, 1, 1, 0, 0, 0);
-        if(settings.To is null) 
-            settings.To = new DateTime(2023, 01, 28, 0, 0, 0); 
-    }
-
-    IEnumerable<Func<QueryContainerDescriptor<TFilmType>, QueryContainer>> FilterDescriptor(SearchDto settings)
-    {
-        var qResult = new List<Func<QueryContainerDescriptor<TFilmType>, QueryContainer>>();
-
-        if(settings.AgeLimit is not null)
-            qResult.AgeFilter(settings);
-
-        qResult.Add(f => DateTimeFilter(f, settings));
-        
-        return qResult;
-    }
-
-    QueryContainer DateTimeFilter(QueryContainerDescriptor<TFilmType> f, SearchDto settings) => f.Bool(b2 => b2
-        .Should(
-            sh => sh
-                .DateRange(d => d
-                    .Field(ReleaseField())
-                    .GreaterThan(settings.From)
-                    .LessThan(settings.To)
-                ),
-            sh => sh
-                .DateRange(d => d
-                    .Field(EndSreeningField())
-                    .GreaterThan(settings.From)
-                    .LessThan(settings.To)
-                    
-                ),
-            sh => sh
-                .DateRange(d => d
-                    .Field(StartSreeningField())
-                    .GreaterThan(settings.From)                    
-                    .LessThan(settings.To)
-                )
-            )
-        .MinimumShouldMatch(1)
-        );
-
-        
     
+
+    IEnumerable<Func<QueryContainerDescriptor<TFilmType>, QueryContainer>> FilterDescriptor(SearchDto settings) => 
+        QueryContainerList<TFilmType>()
+        .AgeFilter(settings)
+        .FilmDateFilter(settings);
     
-    async Task <IEnumerable<Func<QueryContainerDescriptor<TFilmType>, QueryContainer>>> MustDescriptor(SearchDto settings) => 
+     async Task <IEnumerable<Func<QueryContainerDescriptor<TFilmType>, QueryContainer>>> MustDescriptor(SearchDto settings) => 
         QueryContainerList<TFilmType>()
         .AddShouldDesc(await ShuldDescriptorInMustElement(settings))
         .KindOfFilmFilter(settings)
@@ -118,27 +73,20 @@ public class SearchFilmRepositoryImpl<TFilmType> : RepositoryBase, SearchReposit
     
 
 
-    async Task<IEnumerable<Func<QueryContainerDescriptor<TFilmType>, QueryContainer>>> ShuldDescriptorInMustElement(SearchDto settings)
-    {
-        var qResult = new List<Func<QueryContainerDescriptor<TFilmType>, QueryContainer>>();
-        
-        if(settings.Query is null)
-            return qResult;
+    async Task<IEnumerable<Func<QueryContainerDescriptor<TFilmType>, QueryContainer>>> ShuldDescriptorInMustElement(SearchDto settings) =>
+        settings.Query is null ? QueryContainerList<TFilmType>() : QueryContainerList<TFilmType>()
+            .FilmQueryFilter(settings, "2<50%")
+            .FilmNominationFilter(settings)
+            .IdsFilter(await _elasticClient.FilmFromPersons(settings));
+
+    
+
+    
 
         
-        qResult.FilmQueryFilter(settings, "2<50%");
-
-        qResult.Add(q => q.Term(FilmNominationsField(), settings.Query));
-
-        var relatedFilmsFromActors = await _elasticClient.RelatedPersons(settings);
-
-        if(relatedFilmsFromActors.Count() < 1)
-            return qResult;
-
-        qResult.Add(q => q.Ids(ids => ids.Values(relatedFilmsFromActors)));
-        
-        return qResult;
-    }
+    
+    
+   
     
 }
 

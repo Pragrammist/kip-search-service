@@ -3,8 +3,8 @@ using Core;
 using Core.Repositories;
 using Core.Dtos;
 using Core.Dtos.Search;
-using Mapster;
 using Elasticsearch;
+using static Infrastructure.Repositories.DescriptorHelpers;
 using static Infrastructure.Repositories.SelectionFieldHelpers;
 using static Infrastructure.Repositories.PersonFieldHelpers;
 using static Infrastructure.Repositories.FilmFieldHelpers;
@@ -35,33 +35,13 @@ public class SelectionRepositoryImpl<TSelectionType> : RepositoryBase, SearchRep
         return res.SelectHitsWithId();
     }
     
-    async Task <IEnumerable<Func<QueryContainerDescriptor<TSelectionType>, QueryContainer>>> ShouldDesc(SearchDto settings)
-    {
-        var qResult = new List<Func<QueryContainerDescriptor<TSelectionType>, QueryContainer>>();
-        if(settings.Query is not null)
-            qResult.Add(q => q
-                .Match(m => m
-                    .Field(SelectionNameField())
-                        .Query(settings.Query)
-                )
-            );
-        
-        var films = await _elasticClient.SearchRelatedFilms(settings);
+    async Task <IEnumerable<Func<QueryContainerDescriptor<TSelectionType>, QueryContainer>>> ShouldDesc(SearchDto settings) => 
+        QueryContainerList<TSelectionType>()
+        .SelectionNameQuery(settings)
+        .ValuesFilter(SelectionFilmsField(), await _elasticClient.SearchRelatedFilms(settings))
+        .ValuesFilter(SelectionFilmsField(), await _elasticClient.FilmFromPersons(settings));
 
-        if(films.Count() > 0)
-            qResult.Add(q => q
-                .Terms(t => t.Terms(films).Field(SelectionFilmsField()))
-            );
-
-
-        var filmsFromPersons = await _elasticClient.RelatedPersons(settings);
-
-        if(filmsFromPersons.Count() > 0)
-            qResult.Add(q => q
-                .Terms(t => t.Terms(filmsFromPersons).Field(SelectionFilmsField()))
-            );
-        return qResult;
-    }
+   
     
 
    

@@ -1,45 +1,67 @@
 using Core.Dtos.Search;
 using Nest;
 using static Infrastructure.Repositories.PersonFieldHelpers;
+using static Infrastructure.Repositories.DescriptorHelpers;
 
 namespace Infrastructure.Repositories;
 
 public static class PersonDescriptorHelpers
 {
-    public static void PersonQueryFilter<TPersonSearchModel>(this List<Func<QueryContainerDescriptor<TPersonSearchModel>, QueryContainer>> persDesc, SearchDto settings) where TPersonSearchModel: class
+    public static List<Func<QueryContainerDescriptor<TPersonSearchModel>, QueryContainer>> PersonQueryFilter<TPersonSearchModel>(this List<Func<QueryContainerDescriptor<TPersonSearchModel>, QueryContainer>> persDesc, SearchDto settings) where TPersonSearchModel: class
     {
-        persDesc.Add(q => q
-                .MultiMatch(m => m
-                    .Query(settings.Query)
-                    .Fields(p => p
-                        .Fields(new List<Field> {PersonNameField(3), CareerField(1)})
+        if(settings.Query is not null)
+            persDesc.Add(q => q
+                    .MultiMatch(m => m
+                        .Query(settings.Query)
+                        .Fields(p => p
+                            .Fields(new List<Field> {PersonNameField(3), CareerField(1)})
+                        )
                     )
-                )
-            );
+                );
+        return persDesc;
     }
 
-    public static void PersonQueryWithNominationFilter<TPersonSearchModel>(this List<Func<QueryContainerDescriptor<TPersonSearchModel>, QueryContainer>> persDesc, SearchDto settings) where TPersonSearchModel: class
+    public static List<Func<QueryContainerDescriptor<TPersonSearchModel>, QueryContainer>> PersonQueryWithNominationFilter<TPersonSearchModel>(this List<Func<QueryContainerDescriptor<TPersonSearchModel>, QueryContainer>> persDesc, SearchDto settings) where TPersonSearchModel: class
     {
-        persDesc.Add(q => q
-                .MultiMatch(m => m
-                    .Query(settings.Query)
-                    .Fields(p => p
-                        .Fields(new List<Field> {PersonNameField(3), PersonNominationsField(2), CareerField(1)})
+        if(settings.Query is not null)
+            persDesc.Add(q => q
+                    .MultiMatch(m => m
+                        .Query(settings.Query)
+                        .Fields(p => p
+                            .Fields(new List<Field> {PersonNameField(3), PersonNominationsField(2), CareerField(1)})
+                        )
                     )
-                )
-            );
+                );
+        return persDesc;
     }
 
-    public static void KindOfPersonFilter<TPersonSearchModel>(this List<Func<QueryContainerDescriptor<TPersonSearchModel>, QueryContainer>> persDesc, SearchDto settings) where TPersonSearchModel: class
+    public static List<Func<QueryContainerDescriptor<TPersonSearchModel>, QueryContainer>> KindOfPersonFilter<TPersonSearchModel>(this List<Func<QueryContainerDescriptor<TPersonSearchModel>, QueryContainer>> persDesc, SearchDto settings) where TPersonSearchModel: class
     {
-        persDesc.Add(q => q
-                .Term(m => m
-                    .Value(settings.KindOfPerson)
-                    .Field(KindOfPersonField())
-                ));
+        if(settings.KindOfPerson is not null)
+            persDesc.Add(q => q
+                    .Term(m => m
+                        .Value(settings.KindOfPerson)
+                        .Field(KindOfPersonField())
+                    ));
+        return persDesc;
     }
 
-    public static async Task<IEnumerable<string>> RelatedPersons(this IElasticClient elasticClient, SearchDto settings)
+    public static List<Func<QueryContainerDescriptor<TPersonSearchModel>, QueryContainer>> BirdayFromFilter<TPersonSearchModel>(this List<Func<QueryContainerDescriptor<TPersonSearchModel>, QueryContainer>> persDesc, SearchDto settings) where TPersonSearchModel: class
+    {
+        if(settings.From is not null)
+            persDesc.Add(s => s.DateRange(d => d.Field(BirdayField()).GreaterThanOrEquals(settings.From)));
+
+        return persDesc;
+    }
+
+    public static List<Func<QueryContainerDescriptor<TPersonSearchModel>, QueryContainer>> BirdayToFilter<TPersonSearchModel>(this List<Func<QueryContainerDescriptor<TPersonSearchModel>, QueryContainer>> persDesc, SearchDto settings) where TPersonSearchModel: class
+    {
+        if(settings.To is not null)
+            persDesc.Add(s => s.DateRange(d => d.Field(BirdayField()).LessThanOrEquals(settings.To)));
+
+        return persDesc;
+    }
+    public static async Task<IEnumerable<string>> FilmFromPersons(this IElasticClient elasticClient, SearchDto settings)
     {
         var res = await elasticClient.SearchAsync<PersonSearchModel>(s => s
             .Index("persons")
@@ -60,14 +82,9 @@ public static class PersonDescriptorHelpers
         }).Distinct();
     }
     
-    static IEnumerable<Func<QueryContainerDescriptor<TPersonSearchModel>, QueryContainer>> MustPersonDesc<TPersonSearchModel>(SearchDto settings) where TPersonSearchModel : class
-    {
-        var qResult = new List<Func<QueryContainerDescriptor<TPersonSearchModel>, QueryContainer>>();
-        if(settings.Query is not null)
-            qResult.PersonQueryFilter(settings);
-        if(settings.KindOfPerson is not null)
-            qResult.KindOfPersonFilter(settings);
-        
-        return qResult;
-    }
+    static IEnumerable<Func<QueryContainerDescriptor<TPersonSearchModel>, QueryContainer>> MustPersonDesc<TPersonSearchModel>(SearchDto settings) where TPersonSearchModel : class =>
+        QueryContainerList<TPersonSearchModel>()
+        .PersonQueryFilter(settings)
+        .KindOfPersonFilter(settings);
+
 }
