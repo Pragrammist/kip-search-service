@@ -3,7 +3,7 @@ using Nest;
 using Core.Repositories;
 using Core;
 using static Infrastructure.Repositories.FilmFieldHelpers;
-using static Infrastructure.Repositories.PersonFieldHelpers;
+using static Infrastructure.Repositories.DescriptorHelpers;
 
 namespace Infrastructure.Repositories;
 
@@ -108,29 +108,14 @@ public class SearchFilmRepositoryImpl<TFilmType> : RepositoryBase, SearchReposit
         
     
     
-    async Task <IEnumerable<Func<QueryContainerDescriptor<TFilmType>, QueryContainer>>> MustDescriptor(SearchDto settings) 
-    {
-        var qResult = new List<Func<QueryContainerDescriptor<TFilmType>, QueryContainer>>();
-        var shouldDescr = (await ShuldDescriptorInMustElement(settings));
-        
-        qResult.Add(q => q.Bool(b => b.Should(shouldDescr)));
-
-        if(settings.KindOfFilm is not null)
-            qResult.KindOfFilmFilter(settings);
-
-        
-        if(settings.ReleaseType is not null)
-            qResult.ReleaseTypeFilter(settings);
-
-        if(settings.Genres is not null)
-            qResult.GenresFilter(settings);
-
-        if(settings.Countries is not null)
-            qResult.CountriesFilter(settings);
-
-        
-        return qResult;
-    }
+    async Task <IEnumerable<Func<QueryContainerDescriptor<TFilmType>, QueryContainer>>> MustDescriptor(SearchDto settings) => 
+        QueryContainerList<TFilmType>()
+        .AddShouldDesc(await ShuldDescriptorInMustElement(settings))
+        .KindOfFilmFilter(settings)
+        .ReleaseTypeFilter(settings)
+        .GenresFilter(settings)
+        .CountriesFilter(settings);
+    
 
 
     async Task<IEnumerable<Func<QueryContainerDescriptor<TFilmType>, QueryContainer>>> ShuldDescriptorInMustElement(SearchDto settings)

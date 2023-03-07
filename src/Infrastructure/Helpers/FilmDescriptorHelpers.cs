@@ -106,6 +106,13 @@ public static class FilmDescriptorHelpers
         return filmDesc;
     }          
 
+    public static List<Func<QueryContainerDescriptor<TFilmSearchModel>, QueryContainer>> AddShouldDesc<TFilmSearchModel>(this List<Func<QueryContainerDescriptor<TFilmSearchModel>, QueryContainer>> filmDesc, IEnumerable<Func<QueryContainerDescriptor<TFilmSearchModel>, QueryContainer>> shouldDescr) where TFilmSearchModel: class
+    {
+        filmDesc.Add(q => q.Bool(b => b.Should(shouldDescr)));
+        return filmDesc;
+    }          
+
+
     public static async Task<IEnumerable<string>> SearchRelatedFilms(
         this IElasticClient elasticClient,
         SearchDto settings, 
