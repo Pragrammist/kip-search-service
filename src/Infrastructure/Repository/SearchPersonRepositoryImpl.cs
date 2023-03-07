@@ -9,7 +9,7 @@ using static Infrastructure.Repositories.FilmFieldHelpers;
 
 namespace Infrastructure.Repositories;
 
-public class SearchPersonRepositoryImpl<TPerson> : RepositoryBase, SearchRepository<TPerson> where TPerson : class, Idable
+public class SearchPersonRepositoryImpl<TPerson> : RepositoryBase, SearchRepository<TPerson> where TPerson : class, IDable
 {
     
     public SearchPersonRepositoryImpl(IElasticClient elasticClient) : base(elasticClient, "persons")
@@ -31,18 +31,8 @@ public class SearchPersonRepositoryImpl<TPerson> : RepositoryBase, SearchReposit
                 )    
             )
         );
-
-        if(persons.Hits.Count == 0)
-            return Enumerable.Empty<TPerson>();
-
         
-        var res = persons.Hits.Select(s => {
-            var source = s.Source;
-            source.Id = s.Id;
-            return source;
-        });
-        
-        return res;
+        return persons.SelectHitsWithId();
     }
     
     private IPromise<IList<ISort>> SortDescriptor(SortDescriptor<TPerson> selector, SearchDto settings)
@@ -68,7 +58,7 @@ public class SearchPersonRepositoryImpl<TPerson> : RepositoryBase, SearchReposit
                 );
         
         if(settings.KindOfPerson is not null)
-            qResult.Add(s => s.Term(KindOfPersonField(), settings.KindOfPerson));
+            qResult.KindOfPersonFilter(settings);
 
         if(settings.From is not null)
             qResult.Add(s => s.DateRange(d => d.Field(BirdayField()).GreaterThanOrEquals(settings.From)));
@@ -83,19 +73,9 @@ public class SearchPersonRepositoryImpl<TPerson> : RepositoryBase, SearchReposit
         var qResult = new List<Func<QueryContainerDescriptor<TPerson>, QueryContainer>>();
 
         if(settings.Query is not null)
-            qResult.Add(s => s
-                        .MultiMatch(match => match
-                            .Query(settings.Query)
-                            .Fields(fs => fs
-                                .Field(PersonNameField(3))
-                                .Field(PersonNominationsField(2))
-                                .Field(CareerField(1))
-                            )
-                            .MinimumShouldMatch(1)
-                        )
-                    );
+            qResult.PersonQueryWithNominationFilter(settings);
         
-        var filmIds = await SearchRelatedFilms(settings);
+        var filmIds = await _elasticClient.SearchRelatedFilmsForPerson(settings);
 
 
         if(filmIds.Count() > 0)
@@ -108,58 +88,5 @@ public class SearchPersonRepositoryImpl<TPerson> : RepositoryBase, SearchReposit
         return qResult;
     }
     
-    async Task <IEnumerable<string>> SearchRelatedFilms(SearchDto settings)
-    {
-        var res = await _elasticClient.SearchAsync<FilmSearchModel>(s => s
-            .Index("films")
-            .Query(q => q
-                .Bool(b => b
-                    .Must(MustDescriptorForFilm<FilmSearchModel>(settings))
-                )
-            )
-        );
-
-        if(res.Hits.Count == 0)
-            return Enumerable.Empty<string>();
-        
-        return res.Hits.Select(s => s.Id);
-    }
-    
-    IEnumerable<Func<QueryContainerDescriptor<TFilmType>, QueryContainer>> MustDescriptorForFilm<TFilmType>(SearchDto settings) where TFilmType : class
-    {
-        var qResult = new List<Func<QueryContainerDescriptor<TFilmType>, QueryContainer>>();
-        
-        if(settings.Query is not null)
-            qResult.Add(s => s
-                .MultiMatch(m => m
-                    .Query(settings.Query)
-                    .Fields(fs => fs
-                        .Field(FilmNameField())
-                        .Field(DescriptionField())
-                    )
-                )
-            );
-        if(settings.Genres is not null)
-                qResult.Add(s => s.Terms(t => t
-                    .Field(GenresField())
-                    .Terms(settings.Genres)
-                )
-            );
-        
-        if(settings.KindOfFilm is not null)
-                qResult.Add(s => s.Term(KindOfFilmField(),settings.KindOfFilm));
-
-        if(settings.ReleaseType is not null)
-                qResult.Add(s => s.Term(ReleaseTypeField(), settings.ReleaseType));
-
-        if(settings.AgeLimit is not null)
-            qResult.Add(s => s
-                .Range(r => r
-                    .Field(AgeLimitField())
-                    .LessThanOrEquals(settings.AgeLimit)
-                )
-            );
-        return qResult;
-    }
     
 }

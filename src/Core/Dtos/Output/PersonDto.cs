@@ -1,6 +1,6 @@
 namespace Core.Dtos;
 
-public class PersonDto : Idable
+public class PersonDto : IDable
 {
     public string Id { get; set; }  = null!;
 

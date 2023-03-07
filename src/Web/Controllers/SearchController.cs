@@ -31,35 +31,48 @@ public class SearchController : ControllerBase
     
     public async Task<IActionResult> SearchFilms(SearchDto search)
     {
-        return new ObjectResult(await _films.Search(search));
+        var objs = await _films.Search(search);
+
+        return objs.FirstOrDefault() is null ? NotFound() : new ObjectResult(objs); 
     }
 
     [HttpPost("persons")]
     public async Task<IActionResult> SearchPersons(SearchDto search)
     {
-        return new ObjectResult(await _persons.Search(search));
+        var objs = await _persons.Search(search);
+        
+        return objs.FirstOrDefault() is null ? NotFound() : new ObjectResult(objs); 
     }
 
 
     [HttpPost("selections")]
     public async Task<IActionResult> SearchSelections(SearchDto search)
     {
-        return new ObjectResult(await _selections.Search(search));
+        var objs = await _selections.Search(search);
+        
+        return objs.FirstOrDefault() is null ? NotFound() : new ObjectResult(objs); 
     }
     
     [HttpPost("censors")]
     public async Task<IActionResult> SearchCensors(SearchDto search)
     {
-        return new ObjectResult(await _censors.Search(search));
+        var objs = await _censors.Search(search);
+        
+        return objs.FirstOrDefault() is null ? NotFound() : new ObjectResult(objs);
     }
 
     [ResponseCache(Location = ResponseCacheLocation.Any, Duration = 1800)]
     [HttpGet("media")]
     public async Task<IActionResult> GetMediaContent()
     {
-        return new ObjectResult(
-            value: await _searchInteractor.GenerateMediaContent()
-        );
+        var objs = await _searchInteractor.GenerateMediaContent();
+        
+        return 
+            objs.Genres.FirstOrDefault() is null && 
+            objs.Selections.FirstOrDefault() is null && 
+            objs.Trailers.FirstOrDefault() is null 
+            ? NotFound()  : new ObjectResult(objs);
+        
     }
 
     [HttpGet("films/{id}")]

@@ -1,5 +1,5 @@
 namespace Core;
-public interface Idable
+public interface IDable
 {
     public string Id { get; set;}
 }

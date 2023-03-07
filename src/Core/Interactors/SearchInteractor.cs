@@ -16,13 +16,12 @@ public class SearchInteractor
     readonly ByIdRepository<FilmSelectionDto> _readRepoSelections;
     readonly ByIdRepository<CensorDto> _readRepoCensors;
     readonly FilmRepository<FilmShortDto> _filmRepo;
-    
-    readonly GetManyRepository<FilmTrailer> _trailersRepo;
+    readonly SearchRepository<FilmTrailer> _serchRepoTrailer;
     public SearchInteractor(
         SearchRepository<FilmSelectionDto> selections, 
         FilmRepository<FilmShortDto> filmRepo,
         ByIdRepository<FilmShortDto> readRepoShortFilms,
-        GetManyRepository<FilmTrailer> trailersRepo,
+        SearchRepository<FilmTrailer> serchRepoTrailer,
         ByIdRepository<FilmDto> readRepoFilms,
         ByIdRepository<PersonShortDto> readRepoShortPersons,
         ByIdRepository<PersonDto> readRepoPersons,
@@ -30,7 +29,7 @@ public class SearchInteractor
         ByIdRepository<CensorDto> readRepoCensors
     )
     {
-        _trailersRepo = trailersRepo;
+        _serchRepoTrailer = serchRepoTrailer;
         _filmRepo = filmRepo;
         _readRepoShortFilms = readRepoShortFilms;
         _selections = selections;
@@ -50,7 +49,7 @@ public class SearchInteractor
                 selections: await _selections.Search(settings)
             ).ToListAsync(),
             Genres = await _filmRepo.GetGenres(),
-            Trailers = await _trailersRepo.GetSreeningFilms()
+            Trailers = await _serchRepoTrailer.Search(new SearchDto{ ReleaseType = FilmReleaseType.SCREENING})
         };
     }
     async IAsyncEnumerable<FilmSelectionDto> FillFilmObjects(IEnumerable<FilmSelectionDto> selections)

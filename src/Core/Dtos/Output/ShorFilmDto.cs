@@ -2,7 +2,7 @@ using Core;
 
 namespace Core.Dtos;
 
-public class FilmShortDto : Idable
+public class FilmShortDto : IDable
 {
     public string Id { get; set; } = null!;
 

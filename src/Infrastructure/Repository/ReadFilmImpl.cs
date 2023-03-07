@@ -7,7 +7,7 @@ using Core.Dtos;
 
 namespace Infrastructure.Repositories;
 
-public class ReadFilmRepositoryImpl<TFilmType> : RepositoryBase, FilmRepository<TFilmType>, GetManyRepository<TFilmType> where  TFilmType : class, Idable
+public class ReadFilmRepositoryImpl<TFilmType> : RepositoryBase, FilmRepository<TFilmType> where  TFilmType : class, IDable
 {
     
     public ReadFilmRepositoryImpl(IElasticClient elasticClient) : base(elasticClient,"films")
@@ -31,28 +31,7 @@ public class ReadFilmRepositoryImpl<TFilmType> : RepositoryBase, FilmRepository<
         var genres = res.Aggregations.Terms(AGG_NAME).Buckets.Select(b => b.Key) ?? Enumerable.Empty<string>();
         return genres;
     }
-    public async Task <IEnumerable<TFilmType>> GetSreeningFilms()
-    {
-
-        var trailers = await _elasticClient.SearchAsync<TFilmType>(s => s
-            .Index(index)
-            .Sort(s => s.Descending(ViewCountField()))
-            .Query(q => q
-                .Bool(b => b
-                    .Must(m => m
-                        .Terms(ts => ts.Field(ReleaseTypeField()).Terms<FilmReleaseType>(FilmReleaseType.SCREENING))
-                    )
-                )
-            )
-        );
-        return trailers.Hits.Count < 0 
-        ? Enumerable.Empty<TFilmType>()
-        : trailers.Hits.Select(s => {
-            var source = s.Source;
-            source.Id = s.Id;
-            return source;
-        });
-    }
+   
 }
 
 

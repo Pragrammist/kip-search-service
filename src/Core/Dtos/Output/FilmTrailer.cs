@@ -1,6 +1,6 @@
 namespace Core.Dtos;
 
-public class FilmTrailer : Idable
+public class FilmTrailer : IDable
 {
     public string Id { get; set; } = null!;
 

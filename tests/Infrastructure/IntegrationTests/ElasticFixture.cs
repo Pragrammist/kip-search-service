@@ -22,8 +22,6 @@ public class ElasticFixture : IDisposable
 
     public ByIdRepository<FilmShortDto> ByIdFilmRepository { get; }
 
-    public GetManyRepository<FilmTrailer> GetManyRepo { get; }
-
     public SearchRepository<PersonDto> Persons { get; }
 
     public SearchRepository<FilmSelectionDto> Selections { get; }
@@ -44,7 +42,7 @@ public class ElasticFixture : IDisposable
         Persons = new SearchPersonRepositoryImpl<PersonDto>(_elkClient);
         Selections = new SelectionRepositoryImpl<FilmSelectionDto>(_elkClient);
         FilmRepo = new ReadFilmRepositoryImpl<FilmShortDto>(_elkClient);
-        GetManyRepo = new ReadFilmRepositoryImpl<FilmTrailer>(_elkClient);
+        
         ByIdFilmRepository = new ReadByIdRepoGeneric<FilmShortDto>(_elkClient, "films");
         
     }

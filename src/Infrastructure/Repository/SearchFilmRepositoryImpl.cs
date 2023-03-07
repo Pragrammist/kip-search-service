@@ -9,7 +9,7 @@ namespace Infrastructure.Repositories;
 
 
 
-public class SearchFilmRepositoryImpl<TFilmType> : RepositoryBase, SearchRepository<TFilmType> where TFilmType : class, Idable
+public class SearchFilmRepositoryImpl<TFilmType> : RepositoryBase, SearchRepository<TFilmType> where TFilmType : class, IDable
 {
     
     public SearchFilmRepositoryImpl(IElasticClient elasticClient) : base(elasticClient, "films") { }
@@ -17,6 +17,7 @@ public class SearchFilmRepositoryImpl<TFilmType> : RepositoryBase, SearchReposit
 
     public async Task<IEnumerable<TFilmType>> Search(SearchDto settings)
     {
+        SetDefaultDateTimeRange(settings);
         var mustDesc = await MustDescriptor(settings);
         var res = await _elasticClient.SearchAsync<TFilmType>(s => s
             .Index(index)
@@ -30,15 +31,8 @@ public class SearchFilmRepositoryImpl<TFilmType> : RepositoryBase, SearchReposit
                 )
             )
         );
-        if(res.Hits.Count < 1)
-            return Enumerable.Empty<TFilmType>();
-        var sources = res.Hits.Select(s => 
-        {
-            var res = s.Source;
-            res.Id = s.Id;
-            return res;
-        });
-        return sources ?? Enumerable.Empty<TFilmType>();
+
+        return res.SelectHitsWithId();
     }
 
     private IPromise<IList<ISort>> SortDescriptor(SortDescriptor<TFilmType> selector, SearchDto settings)
@@ -60,7 +54,6 @@ public class SearchFilmRepositoryImpl<TFilmType> : RepositoryBase, SearchReposit
     
     IScriptSort RatingCalculator(ScriptSortDescriptor<TFilmType> selector)
     {
-        
         selector.Type("number");
         selector.Script(s => s.Source($"(doc['{nameof(FilmSearchModel.Score)}'].value * doc['{nameof(FilmSearchModel.ScoreCount)}'].value + 1) / (doc['{nameof(FilmSearchModel.ScoreCount)}'].value+1)")); //(a.Score * a.ScoreCount + 1) / (++a.ScoreCount)
         return selector;
@@ -74,46 +67,13 @@ public class SearchFilmRepositoryImpl<TFilmType> : RepositoryBase, SearchReposit
         if(settings.To is null) 
             settings.To = new DateTime(2023, 01, 28, 0, 0, 0); 
     }
-    
-    async Task<IEnumerable<string>> PersonSelector(SearchDto settings)
-    {    
-        if(settings.Query is null)
-            return Enumerable.Empty<string>();
-
-        var maybeRalatedFilmsFromActors = await _elasticClient
-            .SearchAsync<PersonSearchModel>(s => s
-                .Index("persons")
-                .Query(q => q
-                    .Bool(b => b
-                        .Must(MustPersonDecriptor<PersonSearchModel>(settings))
-                    )
-                )
-            );
-
-        
-        if(maybeRalatedFilmsFromActors.Hits.Count < 1)
-            return Enumerable.Empty<string>();
-
-        var res = maybeRalatedFilmsFromActors.Hits
-        .Take((int)settings.Take)
-        .Select(h => h.Source.Films)
-        .Aggregate((s,s2) => {
-            var arrInList = s.ToList();
-            arrInList.AddRange(s2);
-            return arrInList.ToArray();
-        })
-        .Distinct();
-        return res;
-    }
 
     IEnumerable<Func<QueryContainerDescriptor<TFilmType>, QueryContainer>> FilterDescriptor(SearchDto settings)
     {
         var qResult = new List<Func<QueryContainerDescriptor<TFilmType>, QueryContainer>>();
 
         if(settings.AgeLimit is not null)
-            qResult.Add(f => f.Range(r => r.LessThanOrEquals(settings.AgeLimit).Field(AgeLimitField())));
-        
-        SetDefaultDateTimeRange(settings);
+            qResult.AgeFilter(settings);
 
         qResult.Add(f => DateTimeFilter(f, settings));
         
@@ -156,73 +116,22 @@ public class SearchFilmRepositoryImpl<TFilmType> : RepositoryBase, SearchReposit
         qResult.Add(q => q.Bool(b => b.Should(shouldDescr)));
 
         if(settings.KindOfFilm is not null)
-            qResult.Add(q => q
-                .Term(m => m
-                    .Value(settings.KindOfFilm)
-                    .Field(KindOfFilmField())
-                )
-            );
+            qResult.KindOfFilmFilter(settings);
 
         
         if(settings.ReleaseType is not null)
-            qResult.Add(q => q
-                .Term(m => m
-                    .Value(settings.ReleaseType)
-                    .Field(ReleaseTypeField())
-                )
-            );
+            qResult.ReleaseTypeFilter(settings);
 
         if(settings.Genres is not null)
-            qResult.Add(q => q
-                .Terms(t => t
-                    .Terms(settings.Genres)
-                    .Field(GenresField())
-                )
-            );
+            qResult.GenresFilter(settings);
 
         if(settings.Countries is not null)
-            qResult.Add(q => SearcgByCountry(q, settings.Countries));
+            qResult.CountriesFilter(settings);
 
         
         return qResult;
     }
-    QueryContainer SearcgByCountry(QueryContainerDescriptor<TFilmType> desc, string[] countries)
-    {
-        desc.Bool(b => b.Should(sh => {
-            foreach(var country in countries)
-                sh.Match(m => m.Query(country).Field(FilmCountryField()));
-                
-            return sh;
-        }));
-        
 
-        return desc;
-    }
-
-
-    IEnumerable<Func<QueryContainerDescriptor<TPersonSearchModel>, QueryContainer>> MustPersonDecriptor<TPersonSearchModel>(SearchDto settings) where TPersonSearchModel : class
-    {
-        var qRes = new List<Func<QueryContainerDescriptor<TPersonSearchModel>, QueryContainer>>();
-
-        if(settings.Query is not null)
-            qRes.Add(q => q
-                .MultiMatch(m => m
-                    .Query(settings.Query)
-                    .Fields(p => p
-                        .Fields(new List<Field> {PersonNameField(), CareerField()})
-                    )
-                )
-            );
-        
-        if(settings.KindOfPerson is not null)
-            qRes.Add(q => q
-                .Term(m => m
-                    .Value(settings.KindOfPerson)
-                    .Field(KindOfPersonField())
-                )
-            );
-        return qRes;
-    }
 
     async Task<IEnumerable<Func<QueryContainerDescriptor<TFilmType>, QueryContainer>>> ShuldDescriptorInMustElement(SearchDto settings)
     {
@@ -232,19 +141,11 @@ public class SearchFilmRepositoryImpl<TFilmType> : RepositoryBase, SearchReposit
             return qResult;
 
         
-        qResult.Add(q => 
-            q.MultiMatch(m => m
-                .Query(settings.Query)
-                .MinimumShouldMatch("2<50%")
-                .Fields(fs => fs
-                    .Field(FilmNameField(3))
-                    .Field(DescriptionField(2))
-                )
-            )
-        );
+        qResult.FilmQueryFilter(settings, "2<50%");
+
         qResult.Add(q => q.Term(FilmNominationsField(), settings.Query));
 
-        var relatedFilmsFromActors = await PersonSelector(settings);
+        var relatedFilmsFromActors = await _elasticClient.RelatedPersons(settings);
 
         if(relatedFilmsFromActors.Count() < 1)
             return qResult;

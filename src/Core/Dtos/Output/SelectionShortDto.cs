@@ -1,6 +1,6 @@
 namespace Core.Dtos;
 
-public class SelectionShortDto : Idable
+public class SelectionShortDto : IDable
 {
     public string Id { get; set; } = null!;
 

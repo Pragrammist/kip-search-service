@@ -1,6 +1,6 @@
 namespace Core.Dtos;
 
-public class CensorShortDto : Idable
+public class CensorShortDto : IDable
 {
     public string Id { get; set; } = null!;
 

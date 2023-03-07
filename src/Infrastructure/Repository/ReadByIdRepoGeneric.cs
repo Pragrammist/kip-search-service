@@ -3,7 +3,7 @@ using Nest;
 using Core;
 namespace Infrastructure.Repositories;
 
-public class ReadByIdRepoGeneric<TObj> : RepositoryBase, ByIdRepository<TObj> where TObj : class, Idable
+public class ReadByIdRepoGeneric<TObj> : RepositoryBase, ByIdRepository<TObj> where TObj : class, IDable
 {
     public ReadByIdRepoGeneric(IElasticClient elasticClient, string index) : base(elasticClient, index)
     {
@@ -19,12 +19,8 @@ public class ReadByIdRepoGeneric<TObj> : RepositoryBase, ByIdRepository<TObj> wh
                     )
             )
         );
-        var selected = res.Hits.Select(s => {
-            var source = s.Source;
-            source.Id = s.Id;
-            return source;
-        }) ?? Enumerable.Empty<TObj>();
-        return selected;
+
+        return res.SelectHitsWithId();
     }
 }
 

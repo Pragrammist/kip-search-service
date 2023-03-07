@@ -19,7 +19,7 @@ public static class AppServicesConfiguration
         services.AddSingleton<SearchRepository<FilmSelectionDto>, SelectionRepositoryImpl<FilmSelectionDto>>();
         services.AddSingleton<SearchRepository<FilmTrailer>, SearchFilmRepositoryImpl<FilmTrailer>>();
         services.AddSingleton<FilmRepository<FilmShortDto>, ReadFilmRepositoryImpl<FilmShortDto>>();
-        services.AddSingleton<GetManyRepository<FilmTrailer>, ReadFilmRepositoryImpl<FilmTrailer>>();
+        services.AddSingleton<SearchRepository<FilmTrailer>, SearchFilmRepositoryImpl<FilmTrailer>>();
         services.AddSingleton<SearchInteractor>();
         services.AddByIdRepositories();
         return services;

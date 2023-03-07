@@ -1,7 +1,7 @@
 namespace Core.Dtos;
 
 
-public class FilmDto : Idable
+public class FilmDto : IDable
 {
     public uint AgeLimit { get; set; }
 
