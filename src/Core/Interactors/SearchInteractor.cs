@@ -16,12 +16,12 @@ public class SearchInteractor
     readonly ByIdRepository<FilmSelectionDto> _readRepoSelections;
     readonly ByIdRepository<CensorDto> _readRepoCensors;
     readonly FilmRepository<FilmShortDto> _filmRepo;
-    readonly SearchRepository<FilmTrailer> _serchRepoTrailer;
+    readonly SearchRepository<TrailerDto> _serchRepoTrailer;
     public SearchInteractor(
         SearchRepository<FilmSelectionDto> selections, 
         FilmRepository<FilmShortDto> filmRepo,
         ByIdRepository<FilmShortDto> readRepoShortFilms,
-        SearchRepository<FilmTrailer> serchRepoTrailer,
+        SearchRepository<TrailerDto> serchRepoTrailer,
         ByIdRepository<FilmDto> readRepoFilms,
         ByIdRepository<PersonShortDto> readRepoShortPersons,
         ByIdRepository<PersonDto> readRepoPersons,

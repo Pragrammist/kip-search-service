@@ -7,5 +7,5 @@ public class MediaContentDto
 
     public IEnumerable<string> Genres { get; set;} = Enumerable.Empty<string>();
 
-    public IEnumerable<FilmTrailer> Trailers { get; set; } = Enumerable.Empty<FilmTrailer>();
+    public IEnumerable<TrailerDto> Trailers { get; set; } = Enumerable.Empty<TrailerDto>();
 }
