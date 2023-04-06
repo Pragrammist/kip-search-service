@@ -4,11 +4,28 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /source
 
 
-# copy csproj and restore as distinct layers
+# copy csproj different layers
+
+#this sln file need only for the docker
+
+# Core layer
+COPY src/Core/*.csproj Core/
+
+# Infrastructure layer
+COPY src/Infrastructure/*.csproj Infrastructure/
+
+# Web layer
+COPY src/Web/*.csproj Web/
+
+#sln file to restore all projects
+COPY src/*.sln .
+
+#restore
+RUN dotnet restore
 
 COPY src/ .
-WORKDIR /source/Web
-RUN dotnet restore
+
+
 
 # copy everything else and build app
 

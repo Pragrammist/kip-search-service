@@ -22,10 +22,6 @@ services:
       - xpack.security.enabled=false
       - xpack.security.enrollment.enabled=false
       - discovery.type=single-node
-      - "network.host:0.0.0.0"
-    ports:
-      - 9200:9200
-      - 9300:9300
     networks:
       - searchservice-net
 
@@ -51,7 +47,7 @@ services:
     container_name: "kip-searchservice"
     image: kip-searchservice
     environment:
-      - "ELASTIC_URL=http://172.21.0.2:9200"
+      - "ELASTIC_URL=http://elasticsearch:9200"
       - ASPNETCORE_ENVIRONMENT=Production
       - LOGSTASH_URL=http://localhost:8080
     ports:
