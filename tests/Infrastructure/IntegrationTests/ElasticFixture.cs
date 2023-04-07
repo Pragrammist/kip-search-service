@@ -293,17 +293,20 @@ public class ElasticFixture : IDisposable
             new FilmSelectionSearchModel{
                 Id = "s1",
                 Films = new[] {"f1", "f3"},
-                Name = "Отдохните вечером"
+                Name = "Отдохните вечером",
+                Image = "img"
             },
             new FilmSelectionSearchModel{
                 Id = "s2",
                 Films = new[] {"f2", "f6", "f4"},
-                Name = "Приятно проведите время"
+                Name = "Приятно проведите время",
+                Image = "img"
             },
             new FilmSelectionSearchModel{
                 Id = "s3",
                 Films = new[] {"f5"},
-                Name = "Секретный фильм (:"
+                Name = "Секретный фильм (:",
+                Image = "img"
             }
         };
         CensorSearchModel[] GetCensors() => new CensorSearchModel[] 
@@ -312,19 +315,22 @@ public class ElasticFixture : IDisposable
             {
                 Id = "c1",
                 Films = new[]{"f1", "f2", "f3"},
-                Name = "лучши фильмы по версии кого-то другого"
+                Name = "лучши фильмы по версии кого-то другого",
+                Image = "img"
             },
             new CensorSearchModel
             {
                 Id = "c2",
                 Films = new[]{"f1", "f3", "f4"},
-                Name = "меня роняли"
+                Name = "меня роняли",
+                Image = "img"
             },
             new CensorSearchModel
             {
                 Id = "c2",
                 Films = new[]{"f1", "f2", "f4"},
-                Name = "секс это конечно хорошо а вы ездили в тюмень"
+                Name = "секс это конечно хорошо а вы ездили в тюмень",
+                Image = "img"
             }
 
 

@@ -10,4 +10,5 @@ public class CensorDto : IDable
 
     public string[] Films { get; set; } = new string[0];
 
+    public string Image { get; set; } = null!;
 }
