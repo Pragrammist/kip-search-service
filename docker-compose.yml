@@ -24,8 +24,7 @@ services:
       - discovery.type=single-node
     networks:
       - searchservice-net
-    ports:
-      - 9200:9200
+
 
   kibana: 
     restart: always
@@ -40,20 +39,20 @@ services:
     
 
 
-  # kip-searchservice:
-  #   restart: always
-  #   depends_on:
-  #     - elasticsearch
-  #   networks:
-  #     - searchservice-net
-  #   container_name: "kip-searchservice"
-  #   image: kip-searchservice
-  #   environment:
-  #     - "ELASTIC_URL=http://elasticsearch:9200"
-  #     - ASPNETCORE_ENVIRONMENT=Production
-  #     - LOGSTASH_URL=http://localhost:8080
-  #   ports:
-  #     - 5004:80
+  kip-searchservice:
+    restart: always
+    depends_on:
+      - elasticsearch
+    networks:
+      - searchservice-net
+    container_name: "kip-searchservice"
+    image: kip-searchservice
+    environment:
+      - "ELASTIC_URL=http://elasticsearch:9200"
+      - ASPNETCORE_ENVIRONMENT=Production
+      - LOGSTASH_URL=http://localhost:8080
+    ports:
+      - 5004:80
 
 volumes:
   elasticsearch-data-volume:
