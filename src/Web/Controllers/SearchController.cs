@@ -74,6 +74,20 @@ public class SearchController : ControllerBase
             ? NotFound()  : new ObjectResult(objs);
         
     }
+    [ResponseCache(Location = ResponseCacheLocation.Any, Duration = 1800)]
+    [HttpGet("searchcontent")]
+    public async Task<IActionResult> GetSearchContent()
+    {
+        var objs = await _searchInteractor.GenerateSearchContent();
+        
+        return 
+            objs.Genres.FirstOrDefault() is null && 
+            objs.Selections.FirstOrDefault() is null && 
+            objs.Today.FirstOrDefault() is null && 
+            objs.MostPopular.FirstOrDefault() is null
+            ? NotFound()  : new ObjectResult(objs);
+        
+    }
 
     [HttpGet("films/{id}")]
     public async Task<IActionResult> GetFilmById(string id)

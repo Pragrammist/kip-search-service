@@ -1,6 +1,6 @@
 namespace Core.Dtos;
 
-public class SearchMenuContentDot
+public class SearchMenuContentDto
 {
     public IEnumerable<FilmSelectionDto> Selections { get; set;} = Enumerable.Empty<FilmSelectionDto>();
 

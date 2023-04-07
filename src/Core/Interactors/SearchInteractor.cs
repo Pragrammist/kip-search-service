@@ -9,6 +9,7 @@ namespace Core.Interactors;
 public class SearchInteractor
 {
     readonly SearchRepository<FilmSelectionDto> _selections;
+    readonly SearchRepository<PersonShortDto> _searchPerson;
     readonly ByIdRepository<FilmShortDto> _readRepoShortFilms;
     readonly ByIdRepository<FilmDto> _readRepoFilms;
     readonly ByIdRepository<PersonShortDto> _readRepoShortPersons;
@@ -26,7 +27,8 @@ public class SearchInteractor
         ByIdRepository<PersonShortDto> readRepoShortPersons,
         ByIdRepository<PersonDto> readRepoPersons,
         ByIdRepository<FilmSelectionDto> readRepoSelections,
-        ByIdRepository<CensorDto> readRepoCensors
+        ByIdRepository<CensorDto> readRepoCensors,
+        SearchRepository<PersonShortDto> searchPerson
     )
     {
         _serchRepoTrailer = serchRepoTrailer;
@@ -38,7 +40,34 @@ public class SearchInteractor
         _readRepoPersons = readRepoPersons;
         _readRepoSelections = readRepoSelections;
         _readRepoCensors = readRepoCensors;
+        _searchPerson = searchPerson;
     }
+
+
+    public async Task<SearchMenuContentDto> GenerateSearchContent(SearchDto? settings = null)
+    {
+        settings = settings ?? new SearchDto {};
+
+        
+        return new SearchMenuContentDto
+        {
+            Genres = await _filmRepo.GetGenres(),
+            Selections = await FillFilmObjects(
+                selections: await _selections.Search(settings)
+            ).ToListAsync(),
+            Today = await _searchPerson.Search(new SearchDto {
+                From = GetFromDateTime()
+            }),
+            MostPopular = await _searchPerson.Search(new SearchDto {
+                Sort = SortBy.POPULARIY
+            })
+        };
+    }
+    DateTime GetFromDateTime() => new DateTime(
+        year: DateTime.Today.Year - 30,
+        month: 1,
+        day: 1
+    );
     public async Task<MediaContentDto> GenerateMediaContent(SearchDto? settings = null)
     {
         settings = settings ?? new SearchDto {};
