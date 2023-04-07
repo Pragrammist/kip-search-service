@@ -10,7 +10,7 @@ public class PersonDto : IDable
 
     public string Name { get; set; }  = null!; 
 
-    public string Photo { get; set; } = null!;
+    public string[] Photos { get; set; } = new string[0];
 
     public uint Height { get; set; }
 

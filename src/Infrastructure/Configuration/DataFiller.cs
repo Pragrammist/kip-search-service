@@ -304,7 +304,7 @@ public class DataFiller
                 KindOfPerson = default,
                 Name = "Букин Алексей Петрович",
                 Nominations = new string[] {"Почти гена букин"},
-                Photo = "ref",
+                Photos = new []{"ref"},
             },
             new PersonSearchModel { 
                 Id = "p2",
@@ -317,7 +317,7 @@ public class DataFiller
                 KindOfPerson = PersonType.PRODUCER,
                 Name = "Папич Алексей Юрьевич",
                 Nominations = new string[] {"Выигрывает в казино", "стример года"},
-                Photo = "ref",
+                Photos = new []{"ref"},
             },
             new PersonSearchModel { 
                 Id = "p3",
@@ -330,7 +330,7 @@ public class DataFiller
                 KindOfPerson = PersonType.ACTOR,
                 Name = "Имененко Имя Имьянич",
                 Nominations = new string[] {"Выигрывает в казино", "стример года"},
-                Photo = "ref",
+                Photos = new []{"ref"},
             },
         };
         public void FillFilmsData()
