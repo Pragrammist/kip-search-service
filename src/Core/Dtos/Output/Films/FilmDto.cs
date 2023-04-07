@@ -60,6 +60,8 @@ public class FilmDto : IDable
 
     public IEnumerable<PersonShortDto>? StuffObjects { get; set; }
 
+    public string[] Facts { get; set; } = new string[0];
+
     public string[] Articles { get; set; }  = new string[0];
 
     public string[] Trailers { get; set; } = new string[0];

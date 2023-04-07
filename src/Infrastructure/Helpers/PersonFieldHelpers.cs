@@ -22,6 +22,14 @@ public static class PersonFieldHelpers
         return res;
     }
 
+    public static Field PersonFactsField(double? boost = null)
+    {
+        Expression<Func<PersonDto, string[]>> fieldExpr = f => f.Facts;
+        Field res =  fieldExpr;
+        res.Boost = boost;
+        return res;
+    }
+
     public static Field PersonNameField(double? boost = null)
     {
         Expression<Func<PersonDto, string>> fieldExpr = f => f.Name;

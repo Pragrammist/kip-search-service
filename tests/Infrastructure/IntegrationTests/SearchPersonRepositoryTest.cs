@@ -23,6 +23,9 @@ public class SearchPersonRepositoryTest
     [InlineData("Папич Алексей Юрьевич", false)]
     [InlineData("Почти гена букин", false)]
     [InlineData("Карьера супер просто", false)]
+    [InlineData("перчатки", false)]
+    [InlineData("носки", false)]
+    [InlineData("бывший программист", false)]
     [InlineData("Бря... скрряяя па па па па", true)]
     public async Task SearchByQuery(string query, bool isZeroShould)
     {

@@ -20,6 +20,8 @@ public class SearchFilmRepositoryTest
     }
     [Theory]
     [InlineData("Супер герои", false)]
+    [InlineData("на луне", false)]
+    [InlineData("каждый индус принимал участие", false)]
     [InlineData("Бря... скрряяя па па па па", true)]
     public async Task SearchQuery(string query, bool isCountZero)
     {

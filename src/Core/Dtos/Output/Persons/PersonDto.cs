@@ -18,6 +18,8 @@ public class PersonDto : IDable
 
     public string BirthPlace { get; set; } = null!;
 
+    public string[] Facts { get; set; } = new string[0];
+
     public string[] Films { get; set; } = new string[0];
 
     public IEnumerable<FilmShortDto>? FilmObjects { get; set; }

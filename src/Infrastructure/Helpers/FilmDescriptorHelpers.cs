@@ -93,7 +93,8 @@ public static class FilmDescriptorHelpers
                     .MinimumShouldMatch(minShouldMatch)
                     .Fields(fs => fs
                         .Field(FilmNameField(3))
-                        .Field(DescriptionField(2))
+                        .Field(FilmFactsField(2))
+                        .Field(DescriptionField(1))
                     )
                 )
             );

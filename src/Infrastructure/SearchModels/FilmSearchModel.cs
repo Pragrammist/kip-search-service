@@ -55,6 +55,7 @@ public class FilmSearchModel
     public uint NotInterestingCount { get; set; }
 
 
+    public string[] Facts { get; set; } = new string[0];
     public string[] Images { get; set; } = new string[0];
 
     public string[] Stuff { get; set; } = new string[0];

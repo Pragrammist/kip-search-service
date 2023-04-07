@@ -14,7 +14,7 @@ public static class PersonDescriptorHelpers
                     .MultiMatch(m => m
                         .Query(settings.Query)
                         .Fields(p => p
-                            .Fields(new List<Field> {PersonNameField(3), CareerField(1)})
+                            .Fields(new List<Field> {PersonNameField(3), PersonFactsField(2), CareerField(1)})
                         )
                     )
                 );
@@ -28,7 +28,7 @@ public static class PersonDescriptorHelpers
                     .MultiMatch(m => m
                         .Query(settings.Query)
                         .Fields(p => p
-                            .Fields(new List<Field> {PersonNameField(3), PersonNominationsField(2), CareerField(1)})
+                            .Fields(new List<Field> {PersonNameField(4), PersonFactsField(3), PersonNominationsField(2), CareerField(1)})
                         )
                     )
                 );

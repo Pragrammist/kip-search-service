@@ -1,6 +1,8 @@
-using Infrastructure.Repositories;
 using Nest;
 namespace Infrastructure.Configuration;
+
+
+
 
 public class IndexFiller
 {

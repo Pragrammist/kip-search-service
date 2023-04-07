@@ -80,6 +80,13 @@ public static class FilmFieldHelpers
         res.Boost = boost;
         return res;
     }
+    public static Field FilmFactsField(double? boost = null)
+    {
+        Expression<Func<FilmDto, string[]>> fieldExpr = f => f.Facts;
+        Field res =  fieldExpr;
+        res.Boost = boost;
+        return res;
+    }
     public static Field FilmNameField(double? boost = null)
     {
         Expression<Func<FilmDto, string>> fieldExpr = f => f.Name;
