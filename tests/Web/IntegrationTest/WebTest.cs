@@ -19,6 +19,7 @@ public class WebTest : IClassFixture<WebFixture>
     [InlineData("/censors", "/c1")]
     [InlineData("/selections", "/s1")]
     [InlineData("/media")]
+    [InlineData("/searchcontent")]
     public async Task GetActions(string url, string id = "")
     {
         var finalUrl = url + id;
