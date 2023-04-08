@@ -26,4 +26,5 @@ public class PersonDto : IDable
 
     public string[] Nominations { get; set; } = new string[0];
 
+    public string Banner { get; set; } = null!;
 }

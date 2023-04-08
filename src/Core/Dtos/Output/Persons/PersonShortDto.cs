@@ -8,5 +8,7 @@ public class PersonShortDto : IDable
 
     public PersonType[] KindOfPerson { get; set; } = null!; 
 
-    public string Photo { get; set; } = null!;  
+    public string Banner { get; set; } = null!;
+    
+    public string[] Photos { get; set; } = null!;  
 }
