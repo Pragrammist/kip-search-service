@@ -6,7 +6,7 @@ public class PersonShortDto : IDable
     
     public string Name { get; set; }  = null!;
 
-    public PersonType KindOfPerson { get; set; }
+    public PersonType[] KindOfPerson { get; set; } = null!; 
 
     public string Photo { get; set; } = null!;  
 }

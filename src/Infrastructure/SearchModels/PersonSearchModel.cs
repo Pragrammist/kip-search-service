@@ -7,7 +7,7 @@ public class PersonSearchModel
 {
     public string Id { get; set; }  = null!;
 
-    public PersonType KindOfPerson { get; set; } 
+    public PersonType[] KindOfPerson { get; set; } = new PersonType[] { default };
 
     public DateTime Birthday { get; set; }
 

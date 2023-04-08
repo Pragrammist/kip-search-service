@@ -4,7 +4,7 @@ public class PersonDto : IDable
 {
     public string Id { get; set; }  = null!;
 
-    public PersonType KindOfPerson { get; set; } 
+    public PersonType[] KindOfPerson { get; set; } = null!; 
 
     public DateTime Birthday { get; set; }
 

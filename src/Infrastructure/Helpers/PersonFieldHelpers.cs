@@ -8,7 +8,7 @@ public static class PersonFieldHelpers
 {
     public static Field BirdayField(double? boost = null)
     {
-        Expression<Func<PersonDto, DateTime>> fieldExpr = f => f.Birthday;
+        Expression<Func<PersonSearchModel, DateTime>> fieldExpr = f => f.Birthday;
         Field res =  fieldExpr;
         res.Boost = boost;
         return res;
@@ -16,7 +16,7 @@ public static class PersonFieldHelpers
 
     public static Field KindOfPersonField(double? boost = null)
     {
-        Expression<Func<PersonDto, PersonType>> fieldExpr = f => f.KindOfPerson;
+        Expression<Func<PersonSearchModel, PersonType[]>> fieldExpr = f => f.KindOfPerson;
         Field res =  fieldExpr;
         res.Boost = boost;
         return res;
@@ -24,7 +24,7 @@ public static class PersonFieldHelpers
 
     public static Field PersonFactsField(double? boost = null)
     {
-        Expression<Func<PersonDto, string[]>> fieldExpr = f => f.Facts;
+        Expression<Func<PersonSearchModel, string[]>> fieldExpr = f => f.Facts;
         Field res =  fieldExpr;
         res.Boost = boost;
         return res;
@@ -32,28 +32,28 @@ public static class PersonFieldHelpers
 
     public static Field PersonNameField(double? boost = null)
     {
-        Expression<Func<PersonDto, string>> fieldExpr = f => f.Name;
+        Expression<Func<PersonSearchModel, string>> fieldExpr = f => f.Name;
         Field res =  fieldExpr;
         res.Boost = boost;
         return res;
     }
     public static Field PersonFilmsField(double? boost = null)
     {
-        Expression<Func<PersonDto, string[]>> fieldExpr = f => f.Films;
+        Expression<Func<PersonSearchModel, string[]>> fieldExpr = f => f.Films;
         Field res =  fieldExpr;
         res.Boost = boost;
         return res;
     }
     public static Field PersonNominationsField(double? boost = null)
     {
-        Expression<Func<PersonDto, string[]>> fieldExpr = f => f.Nominations;
+        Expression<Func<PersonSearchModel, string[]>> fieldExpr = f => f.Nominations;
         Field res =  fieldExpr;
         res.Boost = boost;
         return res;
     }
     public static Field CareerField(double? boost = null)
     {
-        Expression<Func<PersonDto, string>> fieldExpr = f => f.Career;
+        Expression<Func<PersonSearchModel, string>> fieldExpr = f => f.Career;
         Field res =  fieldExpr;
         res.Boost = boost;
         return res;
