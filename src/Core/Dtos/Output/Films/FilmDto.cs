@@ -34,7 +34,7 @@ public class FilmDto : IDable
 
     public string? Content { get; set; } 
 
-    public int? Fees { get; set; } // сборы
+    public FilmFeesDto[] Fees { get; set; } = new FilmFeesDto[] { };
 
 
     

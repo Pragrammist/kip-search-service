@@ -1,3 +1,4 @@
+using System.Security;
 
 using Core.Dtos;
 
@@ -36,7 +37,7 @@ public class FilmSearchModel
 
     public string? Content { get; set; } 
 
-    public int? Fees { get; set; } // сборы
+    public FilmFeesModel[] Fees { get; set; } = new FilmFeesModel[] {  };
 
 
 
@@ -73,6 +74,14 @@ public class FilmSearchModel
     public string[] Nominations { get; set; } = new string[0];
 
     public SeasonSearchModel[] Seasons { get; set; } = new SeasonSearchModel[0];
+}
+
+
+public class FilmFeesModel
+{
+    public string Name { get; set; } = null!;
+
+    public int Fees { get; set; }
 }
 
 public class SeasonSearchModel
