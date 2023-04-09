@@ -56,9 +56,7 @@ public class FilmDto : IDable
 
     public string[] Images { get; set; } = new string[0];
 
-    public string[] Stuff { get; set; } = new string[0];
-
-    public IEnumerable<PersonShortDto>? StuffObjects { get; set; }
+    public StuffInFilmByProfessionDto[] Stuff { get; set; } = new StuffInFilmByProfessionDto[0];
 
     public string[] Facts { get; set; } = new string[0];
 
@@ -77,4 +75,13 @@ public class FilmDto : IDable
     public string[] Nominations { get; set; } = new string[0];
 
     public SeasonDto[] Seasons { get; set; } = new SeasonDto[0];
+}
+
+public class StuffInFilmByProfessionDto
+{
+    public PersonType Profession { get; set; }
+
+    public string[] Stuff { get; set; } = new string[0];
+
+    public IEnumerable<PersonShortDto>? StuffObjects { get; set; }
 }

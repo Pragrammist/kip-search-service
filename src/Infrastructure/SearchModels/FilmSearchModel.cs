@@ -57,9 +57,10 @@ public class FilmSearchModel
 
 
     public string[] Facts { get; set; } = new string[0];
+
     public string[] Images { get; set; } = new string[0];
 
-    public string[] Stuff { get; set; } = new string[0];
+    public StuffInFilmByProfessionSearchModel[] Stuff { get; set; } = new StuffInFilmByProfessionSearchModel[0];
 
     public string[] Articles { get; set; }  = new string[0];
 
@@ -74,6 +75,13 @@ public class FilmSearchModel
     public string[] Nominations { get; set; } = new string[0];
 
     public SeasonSearchModel[] Seasons { get; set; } = new SeasonSearchModel[0];
+}
+
+public class StuffInFilmByProfessionSearchModel
+{
+    public PersonType Profession { get; set; }
+
+    public string[] Stuff { get; set; } = new string[0];
 }
 
 

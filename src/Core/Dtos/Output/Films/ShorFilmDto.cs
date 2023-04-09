@@ -12,5 +12,11 @@ public class FilmShortDto : IDable
 
     public string Name { get; set; } = null!;
 
-    public double Score { get; set; } 
+    public double Score { get; set; }
+
+    public DateTime? Release { get; set; }
+
+    public DateTime? StartScreening { get; set; }
+
+    public DateTime? EndScreening { get; set; } 
 }

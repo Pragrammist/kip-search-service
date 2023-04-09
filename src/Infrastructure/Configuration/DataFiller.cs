@@ -39,7 +39,18 @@ public class DataFiller
                 ScoreCount = 20,
                 ShareCount = 20,
                 StartScreening = DateTime.Parse("2000-12-03"),
-                Stuff = new string[] { "p1", "p2" },
+                Stuff = new StuffInFilmByProfessionSearchModel[] {
+                    new StuffInFilmByProfessionSearchModel
+                    {
+                        Profession = PersonType.ACTOR,
+                        Stuff = new string[] { "p1", "p2" }
+                    },
+                    new StuffInFilmByProfessionSearchModel
+                    {
+                        Profession = PersonType.PRODUCER,
+                        Stuff = new string[] { "p1" }
+                    }
+                },
                 Trailers = new string[] { "ref" },
                 ViewCount = 10,
                 WatchedCount = 200,
@@ -75,7 +86,20 @@ public class DataFiller
                 ScoreCount = 2000,
                 ShareCount = 2000,
                 StartScreening = DateTime.Parse("2012-11-11"),
-                Stuff = new string[] { "p3", "p2" },
+                Stuff = new StuffInFilmByProfessionSearchModel[] 
+                { 
+                    new StuffInFilmByProfessionSearchModel
+                    {
+                        Profession = PersonType.ACTOR,
+                        Stuff = new string[] { "p3", "p2" }
+                    },
+                    new StuffInFilmByProfessionSearchModel
+                    {
+                        Profession = PersonType.PRODUCER,
+                        Stuff = new string[] { "p2" }
+                    }
+                    
+                },
                 Trailers = new string[] { "ref" },
                 ViewCount = 20,
                 WatchedCount = 300,
@@ -123,7 +147,14 @@ public class DataFiller
                 ScoreCount = 5000,
                 ShareCount = 20,
                 StartScreening = DateTime.Parse("1998-11-11"),
-                Stuff = new string[] { "p2"},
+                Stuff = new StuffInFilmByProfessionSearchModel[] 
+                { 
+                    new StuffInFilmByProfessionSearchModel
+                    {
+                        Profession = PersonType.ACTOR,
+                        Stuff = new string[] { "p2"}
+                    }
+                },
                 Trailers = new string[] { "ref" },
                 ViewCount = 200000,
                 WatchedCount = 2000,
@@ -158,7 +189,14 @@ public class DataFiller
                 ScoreCount = 0,
                 ShareCount = 1000,
                 StartScreening = null,
-                Stuff = new string[] { "p1"},
+                Stuff = new StuffInFilmByProfessionSearchModel[] 
+                { 
+                    new StuffInFilmByProfessionSearchModel
+                    {
+                        Profession = PersonType.ACTOR,
+                        Stuff = new string[] { "p1"},
+                    }
+                },
                 Trailers = new string[] { "ref" },
                 ViewCount = 10000,
                 WatchedCount = 0,
@@ -193,7 +231,14 @@ public class DataFiller
                 ScoreCount = 7000,
                 ShareCount = 30,
                 StartScreening = DateTime.Parse("2005-10-01"),
-                Stuff = new string[] { "p1"},
+                Stuff = new StuffInFilmByProfessionSearchModel[] 
+                { 
+                    new StuffInFilmByProfessionSearchModel
+                    {
+                        Profession = PersonType.ACTOR,
+                        Stuff = new string[] { "p1"},
+                    }
+                },
                 Trailers = new string[] { "ref" },
                 ViewCount = 20,
                 WatchedCount = 20,
@@ -228,7 +273,14 @@ public class DataFiller
                 ScoreCount = 7000,
                 ShareCount = 30,
                 StartScreening = DateTime.Parse("2006-10-01"),
-                Stuff = new string[] { "p1", "p2"},
+                Stuff = new StuffInFilmByProfessionSearchModel[] 
+                { 
+                    new StuffInFilmByProfessionSearchModel
+                    {
+                        Profession = PersonType.ACTOR,
+                        Stuff = new string[] { "p1", "p2" },
+                    }
+                },
                 Trailers = new string[] { "ref" },
                 ViewCount = 20,
                 WatchedCount = 20,
@@ -339,6 +391,7 @@ public class DataFiller
             
 
             var personsResponse =_elkClient.IndexMany(GetPersons(), PERSON_INDEX);
+            
 
             var selectionsResponse = _elkClient.IndexMany(GetSelections(), SELECTION_INDEX);
         

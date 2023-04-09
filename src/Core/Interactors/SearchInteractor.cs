@@ -97,10 +97,25 @@ public class SearchInteractor
         var film = films.FirstOrDefault();
         if(film is null)
             return film;
-        film.StuffObjects = await _readRepoShortPersons.GetByIds(film.Stuff);
+        await FillStuffByStuffObjects(film);
         film.RelatedFilmObjects = await _readRepoShortFilms.GetByIds(film.RelatedFilms);
         return film;
     }
+
+    async Task FillStuffByStuffObjects(FilmDto film)
+    {
+        foreach(var person in film.Stuff)
+            person.StuffObjects = await _readRepoShortPersons.GetByIds(person.Stuff);
+    }
+
+    string[] GetAllStuffIdsFromFilm(FilmDto film) => film.Stuff
+    .Select(s => s.Stuff)
+    .Aggregate((s1, s2) => 
+    {
+        var res = s1.ToList();
+        res.AddRange(s2);
+        return res.ToArray();
+    });
 
     public async Task<PersonDto?> FindPersonById(string id)
     {

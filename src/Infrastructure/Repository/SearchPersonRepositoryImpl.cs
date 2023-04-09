@@ -46,10 +46,10 @@ public class SearchPersonRepositoryImpl<TPerson> : RepositoryBase, SearchReposit
     
     async Task<IEnumerable<Func<QueryContainerDescriptor<TPerson>, QueryContainer>>> MustDescriptor(SearchDto settings) => 
     QueryContainerList<TPerson>()
-    .AddShouldDesc(await ShouldDescriptorInMust(settings))
-    .KindOfPersonFilter(settings)
-    .BirdayFromFilter(settings)
-    .BirdayToFilter(settings);
+        .AddShouldDesc(await ShouldDescriptorInMust(settings))
+        .KindOfPersonFilter(settings)
+        .BirdayFromFilter(settings)
+        .BirdayToFilter(settings);
     
     
     async Task <IEnumerable<Func<QueryContainerDescriptor<TPerson>, QueryContainer>>> ShouldDescriptorInMust(SearchDto settings) =>
