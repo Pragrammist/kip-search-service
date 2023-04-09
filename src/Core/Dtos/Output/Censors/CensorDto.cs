@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Core.Dtos;
 
 public class CensorDto : IDable
@@ -8,6 +10,7 @@ public class CensorDto : IDable
 
     public IEnumerable<FilmShortDto> FilmObjects { get; set; } = Enumerable.Empty<FilmShortDto>();
 
+    [JsonIgnore]
     public string[] Films { get; set; } = new string[0];
 
     public string Image { get; set; } = null!;

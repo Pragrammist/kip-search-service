@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Core.Dtos;
 
 
@@ -66,6 +68,7 @@ public class FilmDto : IDable
 
     public string[] Tizers { get; set; }  = new string[0];
 
+    [JsonIgnore]
     public string[] RelatedFilms { get; set; }  = new string[0];
 
     public IEnumerable<FilmShortDto>? RelatedFilmObjects { get; set; }  
@@ -81,6 +84,7 @@ public class StuffInFilmByProfessionDto
 {
     public PersonType Profession { get; set; }
 
+    [JsonIgnore]
     public string[] Stuff { get; set; } = new string[0];
 
     public IEnumerable<PersonShortDto>? StuffObjects { get; set; }
