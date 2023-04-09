@@ -78,7 +78,7 @@ public class SearchInteractor
                 selections: await _selections.Search(settings)
             ).ToListAsync(),
             Genres = await _filmRepo.GetGenres(),
-            Trailers = await _serchRepoTrailer.Search(new SearchDto{ ReleaseType = FilmReleaseType.SCREENING})
+            Trailers = await _serchRepoTrailer.Search(new SearchDto{ /*ReleaseType = FilmReleaseType.SCREENING*/})
         };
     }
     async IAsyncEnumerable<FilmSelectionDto> FillFilmObjects(IEnumerable<FilmSelectionDto> selections)
