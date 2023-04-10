@@ -48,7 +48,7 @@ public class SearchInteractor
     {
         settings = settings ?? new SearchDto {};
 
-        
+        var date = GetFromDateTime();
         return new SearchMenuContentDto
         {
             Genres = await _filmRepo.GetGenres(),
@@ -56,7 +56,7 @@ public class SearchInteractor
                 selections: await _selections.Search(settings)
             ).ToListAsync(),
             Today = await _searchPerson.Search(new SearchDto {
-                From = GetFromDateTime()
+                From = date
             }),
             MostPopular = await _searchPerson.Search(new SearchDto {
                 Sort = SortBy.POPULARIY
@@ -64,7 +64,7 @@ public class SearchInteractor
         };
     }
     DateTime GetFromDateTime() => new DateTime(
-        year: DateTime.Today.Year - 30,
+        year: DateTime.Today.Year - 40,
         month: 1,
         day: 1
     );
@@ -78,7 +78,7 @@ public class SearchInteractor
                 selections: await _selections.Search(settings)
             ).ToListAsync(),
             Genres = await _filmRepo.GetGenres(),
-            Trailers = await _serchRepoTrailer.Search(new SearchDto{ /*ReleaseType = FilmReleaseType.SCREENING*/})
+            Trailers = await _serchRepoTrailer.Search(new SearchDto{ ReleaseType = FilmReleaseType.SCREENING})
         };
     }
     async IAsyncEnumerable<FilmSelectionDto> FillFilmObjects(IEnumerable<FilmSelectionDto> selections)

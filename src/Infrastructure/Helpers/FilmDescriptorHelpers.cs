@@ -154,11 +154,16 @@ public static class FilmDescriptorHelpers
         Func<SearchDto, IEnumerable<Func<QueryContainerDescriptor<FilmSearchModel>, QueryContainer>>> mustFilmDesc
     ) 
     {
+        var mustDescToPass = mustFilmDesc(settings);
+        
+        if(mustDescToPass.Count() == 0)
+            return Enumerable.Empty<string>();
+
         var res = await elasticClient.SearchAsync<FilmSearchModel>(s => s
             .Index("films")
                 .Query(q => q
                     .Bool(b => b
-                        .Must(mustFilmDesc(settings))
+                        .Must(mustDescToPass)
                     )
                 )
             );

@@ -63,11 +63,16 @@ public static class PersonDescriptorHelpers
     }
     public static async Task<IEnumerable<string>> FilmFromPersons(this IElasticClient elasticClient, SearchDto settings)
     {
+        var mustDescT = MustPersonDesc<PersonSearchModel>(settings);
+        
+        if(mustDescT.Count() == 0)
+            return Enumerable.Empty<string>();
+
         var res = await elasticClient.SearchAsync<PersonSearchModel>(s => s
             .Index("persons")
                 .Query(q => q
                     .Bool(b => b
-                        .Must(MustPersonDesc<PersonSearchModel>(settings))
+                        .Must(mustDescT)
                     )
                 )
             );
